@@ -1,0 +1,9 @@
+{
+  "packages": [
+    "packages/*",
+    "acceptance-setup",
+    "acceptance-components/*"
+  ],
+  "npmClient": "npm",
+  "version": "0.0.0"
+}

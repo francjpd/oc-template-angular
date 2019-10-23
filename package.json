@@ -1,0 +1,42 @@
+{
+  "devDependencies": {
+    "codecov": "3.0.2",
+    "jest": "23.1.0",
+    "lerna": "^3.18.3",
+    "lint-staged": "7.2.0",
+    "oc": "^0.48.5",
+    "prettier-eslint-cli": "^4.2.0"
+  },
+  "scripts": {
+    "postinstall": "lerna bootstrap --hoist",
+    "coverage": "codecov",
+    "clean": "lerna clean",
+    "dev": "jest --watch",
+    "updated": "lerna updated",
+    "test": "jest",
+    "publish": "lerna publish --exact",
+  },
+  "lint-staged": {
+    "*.js": [
+      "prettier-eslint --write",
+      "jest --findRelatedTests",
+      "git add"
+    ]
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "roots": [
+      "packages"
+    ],
+    "coverageDirectory": "./coverage/",
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "packages/**/*.js",
+      "!packages/coverage/**/*",
+      "!node_modules/**",
+      "!packages/**/scaffold/**/*",
+      "!packages/**/utils/**/*"
+    ]
+  },
+  "name": "oc-template-angular"
+}

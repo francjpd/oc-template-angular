@@ -1,0 +1,29 @@
+{
+  "name": "oc-angular-component-wrapper",
+  "version": "1.0.0",
+  "description": "oc-angular-component-wrapper",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/francjpd/oc-template-angular.git"
+  },
+  "bugs": {
+    "url": "https://github.com/francjpd/oc-template-angular/issues"
+  },
+  "homepage": "https://github.com/francjpd/oc-template-angular#readme",
+  "keywords": [
+    "oc",
+    "opencomponents",
+    "angular",
+    "oc-template"
+  ],
+  "author": {
+    "name": "Francisco Poleo"
+  },
+  "license": "MIT",
+  "files": [
+    "index.js",
+    "README.md",
+    "LICENSE"
+  ]
+}

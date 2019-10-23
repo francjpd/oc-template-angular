@@ -1,0 +1,50 @@
+{
+  "name": "oc-template-angular",
+  "version": "2.0.0",
+  "description": "OC-Template-Angular",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/francjpd/oc-template-angular.git"
+  },
+  "bugs": {
+    "url": "https://github.com/francjpd/oc-template-angular/issues"
+  },
+  "homepage": "https://github.com/francjpd/oc-template-angular#readme",
+  "keywords": [
+    "oc",
+    "opencomponents",
+    "angular",
+    "oc-template"
+  ],
+  "author": {
+    "name": "Francisco Poleo"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "core-js": "^3.3.3",
+    "minimal-request": "3.0.0",
+    "nice-cache": "0.0.5",
+    "oc-generic-template-renderer": "2.0.4",
+    "zone.js": "^0.10.2"
+  },
+  "files": [
+    "lib",
+    "index.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "externals": {
+    "Object.assign": {
+      "global": [
+        "Object",
+        "assign"
+      ],
+      "url": "https://unpkg.com/es6-object-assign@1.1.0/dist/object-assign-auto.min.js"
+    },
+    "zone.js": {
+      "global": "Zone",
+      "url": "https://unpkg.com/zone.js@0.10.2/dist/zone.js"
+    }
+  }
+}
