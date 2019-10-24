@@ -14,7 +14,7 @@
     "dev": "jest --watch",
     "updated": "lerna updated",
     "test": "jest",
-    "publish": "lerna publish --exact",
+    "publish": "lerna publish --exact"
   },
   "lint-staged": {
     "*.js": [
