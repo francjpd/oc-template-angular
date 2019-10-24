@@ -53,7 +53,7 @@
     "oc-hash-builder": "1.0.2",
     "oc-minify-file": "1.0.14",
     "oc-statics-compiler": "2.0.10",
-    "oc-template-angular": "^2.0.0",
+    "oc-template-angular": "^1.0.0",
     "oc-templates-messages": "1.0.2",
     "oc-view-wrapper": "1.0.3",
     "postcss-extend": "^1.0.5",
