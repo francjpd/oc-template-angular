@@ -38,5 +38,9 @@
       "!packages/**/utils/**/*"
     ]
   },
-  "name": "oc-template-angular"
+  "name": "oc-template-angular",
+  "dependencies": {
+    "@angular/compiler-cli": "^8.2.12",
+    "typescript": "^3.5.3"
+  }
 }

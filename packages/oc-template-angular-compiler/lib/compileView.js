@@ -16,7 +16,9 @@ const {
 } = require("./to-abstract-base-template-utils/oc-webpack");
 
 const fontFamilyUnicodeParser = require("./to-abstract-base-template-utils/font-family-unicode-parser");
-const angularOCProviderTemplate = require("./angularOCProviderTemplate");
+const ocProviderComponentTemplate = require("./oc-provider/oc-provider.component.template");
+const ocProviderModuleTemplate = require("./oc-provider/oc-provider.module.template");
+const ocProviderFactory = require("./oc-provider/oc-Provider-factory");
 const viewTemplate = require("./viewTemplate");
 
 module.exports = (options, callback) => {
@@ -33,12 +35,21 @@ module.exports = (options, callback) => {
   const externals = getInfo().externals;
   const production = options.production;
 
-  const angularOCProviderContent = angularOCProviderTemplate({ viewPath });
-  const angularOCProviderName = "angularOCProvider.tsx";
-  const angularOCProviderPath = path.join(tempPath, angularOCProviderName);
+  const ocProviderComponent = {
+    name: 'oc-provider.component.ts',
+    content: ocProviderFactory(options.componentPackage.name, options.componentPath, ocProviderComponentTemplate),
+    path: path.join(tempPath, 'oc-provider.component.ts')
+  }
+
+  const ocProviderModule = {
+    name: 'oc-provider.module.ts',
+    content: ocProviderFactory(options.componentPackage.name, viewPath, ocProviderModuleTemplate),
+    path: path.join(tempPath, 'oc-provider.module.ts')
+  }
 
   const compile = (options, cb) => {
     const config = webpackConfigurator({
+      tsconfigPath: path.join(tempPath, "tsconfig.json"),
       viewPath: options.viewPath,
       externals: externals.reduce((externals, dep) => {
         externals[dep.name] = dep.global;
@@ -107,29 +118,33 @@ module.exports = (options, callback) => {
         fs.outputFile(
           path.join(tempPath, "tsconfig.json"),
           JSON.stringify({
-            files: [angularOCProviderName],
+            files: [ocProviderComponent.name, ocProviderModule.name],
             compilerOptions: {
+              declaration: false,
+              downlevelIteration: true,
+              experimentalDecorators: true,
+              importHelpers: true,
+              moduleResolution: "node",
               module: "commonjs",
-              target: "es5",
-              lib: ["es6", "dom"],
-              jsx: "angular",
+              target: "es2015",
+              lib: ["es2018", "dom"],
               typeRoots: [path.join(__dirname, "../node_modules/@types")]
             },
-            paths: {
-              angular: [path.join(__dirname, "../node_modules/angular")],
-              "angular-dom": [
-                path.join(__dirname, "../node_modules/angular-dom")
-              ],
-              "prop-types": [path.join(__dirname, "../node_modules/prop-types")]
+            angularCompilerOptions: {
+              fullTemplateTypeCheck: true,
+              strictInjectionParameters: true
             }
           }),
           next
         ),
-      next =>
-        fs.outputFile(angularOCProviderPath, angularOCProviderContent, next),
-      next => compile({ viewPath: angularOCProviderPath }, next),
+      next => fs.outputFile(ocProviderComponent.path, ocProviderComponent.content, next),
+      next => fs.outputFile(ocProviderModule.path, ocProviderModule.content, next),
+      // next => compile({ viewPath: ocProviderComponent.path }, next),
+      // (compiled, next) =>
+      //   fs.remove(ocProviderComponent.path, err => next(err, compiled)),
+      next => compile({ viewPath: ocProviderModule.path }, next),
       (compiled, next) =>
-        fs.remove(angularOCProviderPath, err => next(err, compiled)),
+        fs.remove(ocProviderModule.path, err => next(err, compiled)),
       (compiled, next) => fs.ensureDir(publishPath, err => next(err, compiled)),
       (compiled, next) =>
         fs.writeFile(

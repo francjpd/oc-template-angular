@@ -12,7 +12,7 @@ module.exports = function webpackConfigGenerator(options) {
     options.production !== undefined ? options.production : "true";
 
   const sourceMaps = !production;
-  const devtool = sourceMaps ? "source-map" : "";
+  //const devtool = sourceMaps ? "source-map" : "";
 
   const jsLoaders = [
     {
@@ -23,7 +23,6 @@ module.exports = function webpackConfigGenerator(options) {
           noImplicitAny: true,
           module: "es6",
           target: "es6",
-          jsx: "react",
           allowJs: true,
           sourceMap: sourceMaps
         }
