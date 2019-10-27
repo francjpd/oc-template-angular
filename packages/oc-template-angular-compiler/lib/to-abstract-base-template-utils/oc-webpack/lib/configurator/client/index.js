@@ -2,61 +2,22 @@
 
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const MinifyPlugin = require("babel-minify-webpack-plugin");
+const { AngularCompilerPlugin } = require('@ngtools/webpack');
 const path = require("path");
 const webpack = require("webpack");
 const _ = require("lodash");
+const pascalcase = require('pascalcase');
 
-const createExcludeRegex = require("../createExcludeRegex");
 
 module.exports = options => {
   const buildPath = options.buildPath || "/build";
   const production = options.production;
-  const buildIncludes = options.buildIncludes.concat(
-    "oc-template-typescript-react-compiler/utils"
-  );
-  const excludeRegex = createExcludeRegex(buildIncludes);
-  const localIdentName = !production
-    ? "oc__[path][name]-[ext]__[local]__[hash:base64:8]"
-    : "[local]__[hash:base64:8]";
-
-  const cssLoader = {
-    test: /\.css$/,
-    use: [
-      MiniCssExtractPlugin.loader,
-      {
-        loader: require.resolve("css-loader"),
-        options: {
-          importLoaders: 1,
-          modules: true,
-          localIdentName,
-          camelCase: true
-        }
-      },
-      {
-        loader: require.resolve("postcss-loader"),
-        options: {
-          ident: "postcss",
-          plugins: [
-            require("postcss-import"),
-            require("postcss-extend"),
-            require("postcss-icss-values"),
-            require("autoprefixer")
-          ]
-        }
-      }
-    ]
-  };
 
   let plugins = [
-    new MiniCssExtractPlugin({
-      filename: "[name].css",
-      allChunks: true,
-      ignoreOrder: true
-    }),
-    new webpack.DefinePlugin({
-      "process.env.NODE_ENV": JSON.stringify(
-        production ? "production" : "development"
-      )
+    new AngularCompilerPlugin({
+      tsConfigPath: options.tsconfigPath,
+      entryModule: `${options.viewPath}#${pascalcase('oc-provider-module')}`,
+      sourceMap: true
     })
   ];
   if (production) {
@@ -82,47 +43,10 @@ module.exports = options => {
     externals: _.omit(options.externals, polyfills),
     module: {
       rules: [
-        cssLoader,
+        // cssLoader,
         {
-          test: /\.tsx?$/,
-          exclude: excludeRegex,
-          use: [
-            {
-              loader: require.resolve("babel-loader"),
-              options: {
-                cacheDirectory,
-                babelrc: false,
-                presets: [
-                  [
-                    require.resolve("babel-preset-env"),
-                    { modules: false, loose: true }
-                  ],
-                  [require.resolve("babel-preset-react")]
-                ],
-                plugins: [
-                  [require.resolve("babel-plugin-transform-object-rest-spread")]
-                ]
-              }
-            },
-            {
-              loader: require.resolve("ts-loader"),
-              options: {
-                compilerOptions: {
-                  outDir: buildPath,
-                  noImplicitAny: true,
-                  module: "commonjs",
-                  esModuleInterop: true,
-                  target: "es5",
-                  lib: ["es6", "dom"],
-                  jsx: "preserve",
-                  allowJs: true,
-                  sourceMap: false,
-                  allowSyntheticDefaultImports: true,
-                  baseUrl: path.join(options.viewPath, "../../../node_modules")
-                }
-              }
-            }
-          ]
+          test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
+          loader: '@ngtools/webpack'
         }
       ]
     },

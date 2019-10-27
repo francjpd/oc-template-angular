@@ -1,0 +1,14 @@
+<header>
+    <div class="overlay">
+      <span class="logo" [style.backgroundImage]="'url('+ ngLogo +')'"></span>
+      <span>Angular 8</span>
+    </div>
+    <h1><i></i></h1>
+  </header>
+  <nav id="nav">
+    <ul>
+      <li *ngFor="let route of routes">
+        <a routerLink="{{route.route}}" [ngClass]="{'selected': isSelected(route)}">{{route.label}}</a>
+      </li>
+    </ul>
+  </nav>

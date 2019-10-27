@@ -1,0 +1,1 @@
+module.exports = (name, path, templateFn) => templateFn(name, path);

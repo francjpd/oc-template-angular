@@ -5,7 +5,7 @@ const fs = require("fs-extra");
 const compileView = require("../lib/compileView.js");
 
 test("valid component", done => {
-  const componentPath = path.join(__dirname, "../../../mocks/react-component");
+  const componentPath = path.join(__dirname, "../../../mocks/angular-component");
   const publishPath = path.join(componentPath, "_packageCompileViewTest");
   const publishFileName = "template.js";
 
@@ -27,8 +27,8 @@ test("valid component", done => {
         .readFileSync(path.join(publishPath, publishFileName), "UTF8")
         .replace(viewHashKey, "dummyData")
         .replace(
-          /\[\"oc\",.*?\"reactComponents\",.*?\".*?\"\]/g,
-          '["oc", "reactComponents", "dummyContent"]'
+          /\[\"oc\",.*?\"angularComponents\",.*?\".*?\"\]/g,
+          '["oc", "angularComponents", "dummyContent"]'
         )
     ).toMatchSnapshot();
     fs.removeSync(publishPath);
