@@ -9,8 +9,8 @@ module.exports = (name, path) => {
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
-import { OcProvider } from './oc-provider.component';
-import { ${namePascalCase}Module } from '${path.split('.ts')[0]}';
+import { OcProviderComponent } from './oc-provider.component';
+import { ${namePascalCase}Module } from 'src/app/${name}.module';
 
 @NgModule({
   imports: [
@@ -19,9 +19,10 @@ import { ${namePascalCase}Module } from '${path.split('.ts')[0]}';
     ${namePascalCase}Module
   ],
   declarations: [
-    OcProvider
+    OcProviderComponent
   ],
-  bootstrap: [OcProvider]
+  exports: [OcProviderComponent],
+  bootstrap: [OcProviderComponent]
 })
 export class OcProviderModule { }
 `};

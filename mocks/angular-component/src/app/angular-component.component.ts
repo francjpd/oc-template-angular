@@ -4,9 +4,10 @@ import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'angular-component',
+  template: '<p>Hello world</p>',
   styleUrls: ['./angular-component.component.css']
 })
-export class AngularComponent implements OnInit, OnDestroy {
+export class AngularComponentComponent implements OnInit, OnDestroy {
   subscription: Subscription = null;
   title = 'oc-navbar';
 
@@ -32,7 +33,7 @@ export class AngularComponent implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
   }
 
-  isSelected({ route }:any) {
+  isSelected({ route }: any) {
     if (window.location.pathname === route) {
       return true;
     }

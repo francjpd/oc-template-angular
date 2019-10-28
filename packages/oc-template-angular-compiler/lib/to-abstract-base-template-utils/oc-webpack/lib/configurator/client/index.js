@@ -1,8 +1,6 @@
 "use strict";
 
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const MinifyPlugin = require("babel-minify-webpack-plugin");
-const { AngularCompilerPlugin } = require('@ngtools/webpack');
 const path = require("path");
 const webpack = require("webpack");
 const _ = require("lodash");
@@ -12,12 +10,26 @@ const pascalcase = require('pascalcase');
 module.exports = options => {
   const buildPath = options.buildPath || "/build";
   const production = options.production;
+  let angularCompilerDev;
+  
+  // We can't have multiple instances of ngtools/webpack.
+  try {
+    angularCompilerDev = require(path.join(options.componentPath, 'node_modules/@ngtools/webpack'));
+  } catch (err) {
+    angularCompilerDev = require(`@ngtools/webpack`);
+  }
+  const { AngularCompilerPlugin } = angularCompilerDev;
 
   let plugins = [
     new AngularCompilerPlugin({
       tsConfigPath: options.tsconfigPath,
       entryModule: `${options.viewPath}#${pascalcase('oc-provider-module')}`,
       sourceMap: true
+    }),
+    new webpack.DefinePlugin({
+      "process.env.NODE_ENV": JSON.stringify(
+        production ? "production" : "development"
+      )
     })
   ];
   if (production) {
@@ -43,11 +55,10 @@ module.exports = options => {
     externals: _.omit(options.externals, polyfills),
     module: {
       rules: [
-        // cssLoader,
-        {
-          test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
-          loader: '@ngtools/webpack'
-        }
+        { test: /\.scss$/, loader: ['raw-loader', 'sass-loader'], },
+        { test: /\.css$/, loader: 'raw-loader', },
+        { test: /\.html$/, loader: 'raw-loader' },
+        { test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/, loader: '@ngtools/webpack' }
       ]
     },
     plugins,
