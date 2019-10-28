@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
-import { AngularComponent } from './angular-component.component';
+import { AngularComponentComponent } from './angular-component.component';
 import { AngularComponentRoutingModule } from './angular-component-routing.module';
 
 @NgModule({
@@ -10,7 +10,10 @@ import { AngularComponentRoutingModule } from './angular-component-routing.modul
     CommonModule,
     AngularComponentRoutingModule
   ],
-  declarations: [AngularComponent],
-  bootstrap: [AngularComponent]
+  exports: [
+    AngularComponentComponent
+  ],
+  declarations: [AngularComponentComponent],
+  bootstrap: [AngularComponentComponent]
 })
 export class AngularComponentModule { }

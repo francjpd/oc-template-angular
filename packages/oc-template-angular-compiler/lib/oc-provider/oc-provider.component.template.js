@@ -7,9 +7,9 @@ import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'oc-provider',
-  template: '<${name}/>'
+  template: '<${name}></${name}>'
 })
-export class OcProvider implements OnInit {
+export class OcProviderComponent implements OnInit {
   title = 'oc-provider';
   
   @Input() _staticPath: string;

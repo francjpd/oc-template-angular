@@ -18,12 +18,14 @@ const {
 const fontFamilyUnicodeParser = require("./to-abstract-base-template-utils/font-family-unicode-parser");
 const ocProviderComponentTemplate = require("./oc-provider/oc-provider.component.template");
 const ocProviderModuleTemplate = require("./oc-provider/oc-provider.module.template");
-const ocProviderFactory = require("./oc-provider/oc-Provider-factory");
+const ocMainTemplate = require("./oc-main/oc-main.template");
+const ocProviderFactory = require("./utils/oc-Provider-factory");
 const viewTemplate = require("./viewTemplate");
 
 module.exports = (options, callback) => {
   const viewFileName = options.componentPackage.oc.files.template.src;
   let viewPath = path.join(options.componentPath, viewFileName);
+  const componentPath = options.componentPath;
   if (process.platform === "win32") {
     viewPath = viewPath.split("\\").join("\\\\");
   }
@@ -47,9 +49,18 @@ module.exports = (options, callback) => {
     path: path.join(tempPath, 'oc-provider.module.ts')
   }
 
+  const ocMain = {
+    name: 'oc-main.ts',
+    content: ocProviderFactory(options.componentPackage.name, viewPath, ocMainTemplate),
+    path: path.join(tempPath, 'oc-main.ts')
+  }
+
+
+
   const compile = (options, cb) => {
     const config = webpackConfigurator({
-      tsconfigPath: path.join(tempPath, "tsconfig.json"),
+      componentPath,
+      tsconfigPath: path.join(componentPath, "tsconfig.app.json"),
       viewPath: options.viewPath,
       externals: externals.reduce((externals, dep) => {
         externals[dep.name] = dep.global;
@@ -114,37 +125,38 @@ module.exports = (options, callback) => {
 
   async.waterfall(
     [
-      next =>
-        fs.outputFile(
-          path.join(tempPath, "tsconfig.json"),
-          JSON.stringify({
-            files: [ocProviderComponent.name, ocProviderModule.name],
-            compilerOptions: {
-              declaration: false,
-              downlevelIteration: true,
-              experimentalDecorators: true,
-              importHelpers: true,
-              moduleResolution: "node",
-              module: "commonjs",
-              target: "es2015",
-              lib: ["es2018", "dom"],
-              typeRoots: [path.join(__dirname, "../node_modules/@types")]
-            },
-            angularCompilerOptions: {
-              fullTemplateTypeCheck: true,
-              strictInjectionParameters: true
-            }
-          }),
-          next
-        ),
-      next => fs.outputFile(ocProviderComponent.path, ocProviderComponent.content, next),
-      next => fs.outputFile(ocProviderModule.path, ocProviderModule.content, next),
+      // next =>
+      //   fs.outputFile(
+      //     path.join(tempPath, "tsconfig.json"),
+      //     JSON.stringify({
+      //       compilerOptions: {
+      //         declaration: false,
+      //         downlevelIteration: true,
+      //         experimentalDecorators: true,
+      //         importHelpers: true,
+      //         moduleResolution: "node",
+      //         module: "commonjs",
+      //         target: "es2015",
+      //         lib: ["es2018", "dom"],
+      //         baseUrl: componentPath,
+      //         typeRoots: [path.join(__dirname, "../node_modules/@types")]
+      //       },
+      //       angularCompilerOptions: {
+      //         fullTemplateTypeCheck: true,
+      //         strictInjectionParameters: true
+      //       }
+      //     }),
+      //     next
+      //   ),
+      // next => fs.outputFile(ocProviderComponent.path, ocProviderComponent.content, next),
+      // next => fs.outputFile(ocProviderModule.path, ocProviderModule.content, next),
+      // next => fs.outputFile(ocMain.path, ocMain.content, next),
       // next => compile({ viewPath: ocProviderComponent.path }, next),
       // (compiled, next) =>
       //   fs.remove(ocProviderComponent.path, err => next(err, compiled)),
-      next => compile({ viewPath: ocProviderModule.path }, next),
+      next => compile({ viewPath: path.join(componentPath, '/src/main.ts') }, next),
       (compiled, next) =>
-        fs.remove(ocProviderModule.path, err => next(err, compiled)),
+        fs.remove(ocMain.path, err => next(err, compiled)),
       (compiled, next) => fs.ensureDir(publishPath, err => next(err, compiled)),
       (compiled, next) =>
         fs.writeFile(
