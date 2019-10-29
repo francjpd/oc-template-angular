@@ -8,9 +8,9 @@ const higherOrderServerTemplate = ({
   componentVersion
 }) => `
 import { data as dataProvider } from '${removeTsExtension(serverPath)}';
-import { OC } from '${removeTsExtension(ocContextPath)}';
+import { Context } from 'oc-template-angular-compiler/lib/utils/oc-context.interface';
 
-export const data = (context : OC.Context, callback : (error: any, data?: any) => void) => {
+export const data = (context : Context, callback : (error: any, data?: any) => void) => {
   dataProvider(context, (error: any, model: any) => {
     if (error) {
       return callback(error);
@@ -24,9 +24,9 @@ export const data = (context : OC.Context, callback : (error: any, data?: any) =
     const srcPathHasProtocol = context.staticPath.indexOf("http") === 0;
     const srcPath = srcPathHasProtocol ? context.staticPath : ("https:" + context.staticPath);
     return callback(null, Object.assign({}, {
-      reactComponent: {
+      angularComponent: {
         key: "${bundleHashKey}",
-        src: srcPath + "react-component.js",
+        src: srcPath + "angular-component.js",
         props
       }
     }));

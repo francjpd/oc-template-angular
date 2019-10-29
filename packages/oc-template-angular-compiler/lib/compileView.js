@@ -4,22 +4,17 @@ const async = require("async");
 const fs = require("fs-extra");
 const hashBuilder = require("oc-hash-builder");
 const MemoryFS = require("memory-fs");
-const minifyFile = require("oc-minify-file");
 const ocViewWrapper = require("oc-view-wrapper");
 const path = require("path");
 const angularComponentWrapper = require("oc-angular-component-wrapper");
 const strings = require("oc-templates-messages");
+const { execSync } = require('child_process');
 
 const {
   compiler,
   configurator: { client: webpackConfigurator }
 } = require("./to-abstract-base-template-utils/oc-webpack");
 
-const fontFamilyUnicodeParser = require("./to-abstract-base-template-utils/font-family-unicode-parser");
-const ocProviderComponentTemplate = require("./oc-provider/oc-provider.component.template");
-const ocProviderModuleTemplate = require("./oc-provider/oc-provider.module.template");
-const ocMainTemplate = require("./oc-main/oc-main.template");
-const ocProviderFactory = require("./utils/oc-Provider-factory");
 const viewTemplate = require("./viewTemplate");
 
 module.exports = (options, callback) => {
@@ -37,31 +32,12 @@ module.exports = (options, callback) => {
   const externals = getInfo().externals;
   const production = options.production;
 
-  const ocProviderComponent = {
-    name: 'oc-provider.component.ts',
-    content: ocProviderFactory(options.componentPackage.name, options.componentPath, ocProviderComponentTemplate),
-    path: path.join(tempPath, 'oc-provider.component.ts')
-  }
-
-  const ocProviderModule = {
-    name: 'oc-provider.module.ts',
-    content: ocProviderFactory(options.componentPackage.name, viewPath, ocProviderModuleTemplate),
-    path: path.join(tempPath, 'oc-provider.module.ts')
-  }
-
-  const ocMain = {
-    name: 'oc-main.ts',
-    content: ocProviderFactory(options.componentPackage.name, viewPath, ocMainTemplate),
-    path: path.join(tempPath, 'oc-main.ts')
-  }
-
-
 
   const compile = (options, cb) => {
+
+    execSync(`ng build --output-path=${tempPath} --crossOrigin=none --prod=true --optimization=false --baseHref=${componentPath} --output-hashing none`);
     const config = webpackConfigurator({
-      componentPath,
-      tsconfigPath: path.join(componentPath, "tsconfig.app.json"),
-      viewPath: options.viewPath,
+      viewPath: path.join(tempPath, 'main-es2015.js'),
       externals: externals.reduce((externals, dep) => {
         externals[dep.name] = dep.global;
         return externals;
@@ -87,25 +63,10 @@ module.exports = (options, callback) => {
       const wrappedBundle = angularComponentWrapper(bundleHash, bundle);
       fs.outputFileSync(bundlePath, wrappedBundle);
 
-      let css = null;
-      if (data.build["main.css"]) {
-        // This is an awesome hack by KimTaro that will blow your mind.
-        // Remove it once this get merged: https://github.com/webpack-contrib/css-loader/pull/523
-        css = fontFamilyUnicodeParser(
-          memoryFs.readFileSync(`/build/main.css`, "UTF8")
-        );
-
-        // We convert single quotes to double quotes in order to
-        // support the viewTemplate's string interpolation
-        css = minifyFile(".css", css).replace(/\'/g, '"');
-        const cssPath = path.join(publishPath, `styles.css`);
-        fs.outputFileSync(cssPath, css);
-      }
 
       const angularRoot = `oc-angularRoot-${componentPackage.name}`;
       const templateString = viewTemplate({
         angularRoot,
-        css,
         externals,
         bundleHash,
         bundleName
@@ -125,38 +86,7 @@ module.exports = (options, callback) => {
 
   async.waterfall(
     [
-      // next =>
-      //   fs.outputFile(
-      //     path.join(tempPath, "tsconfig.json"),
-      //     JSON.stringify({
-      //       compilerOptions: {
-      //         declaration: false,
-      //         downlevelIteration: true,
-      //         experimentalDecorators: true,
-      //         importHelpers: true,
-      //         moduleResolution: "node",
-      //         module: "commonjs",
-      //         target: "es2015",
-      //         lib: ["es2018", "dom"],
-      //         baseUrl: componentPath,
-      //         typeRoots: [path.join(__dirname, "../node_modules/@types")]
-      //       },
-      //       angularCompilerOptions: {
-      //         fullTemplateTypeCheck: true,
-      //         strictInjectionParameters: true
-      //       }
-      //     }),
-      //     next
-      //   ),
-      // next => fs.outputFile(ocProviderComponent.path, ocProviderComponent.content, next),
-      // next => fs.outputFile(ocProviderModule.path, ocProviderModule.content, next),
-      // next => fs.outputFile(ocMain.path, ocMain.content, next),
-      // next => compile({ viewPath: ocProviderComponent.path }, next),
-      // (compiled, next) =>
-      //   fs.remove(ocProviderComponent.path, err => next(err, compiled)),
-      next => compile({ viewPath: path.join(componentPath, '/src/main.ts') }, next),
-      (compiled, next) =>
-        fs.remove(ocMain.path, err => next(err, compiled)),
+      (next) => compile({ viewPath: path.join(componentPath, '/src/main.ts') }, next),
       (compiled, next) => fs.ensureDir(publishPath, err => next(err, compiled)),
       (compiled, next) =>
         fs.writeFile(

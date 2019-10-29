@@ -4,11 +4,14 @@ const viewTemplate = ({
   externals,
   bundleHash,
   bundleName
-}) => `function(model){
+}) => {
+  console.log('pretest');
+  return `function(model){
+  'console.log("test");
   var modelHTML =  model.__html ? model.__html : '';
   var staticPath = model.angularComponent.props._staticPath;
   var props = JSON.stringify(model.angularComponent.props);
-  return '<div id="${angularRoot}" class="${angularRoot}">' + modelHTML + '</div>' +
+  return '<ic id="${angularRoot}" class="${angularRoot}">' + modelHTML + '</div>' +
     '${css ? "<style>" + css + "</style>" : ""}' +
     '<script>' +
     'window.oc = window.oc || {};' +
@@ -19,15 +22,15 @@ const viewTemplate = ({
         'oc.require(' +
           '["oc", "angularComponents", "${bundleHash}"],' + 
           '"' + staticPath + '${bundleName}.js",' +
-          'function(ReactComponent){' +
+          'function(AngularComponent){' +
+            'console.log('test');
             'var targetNode = document.getElementById("${angularRoot}");' +
-            'targetNode.setAttribute("id","");' +
-            'Wont render properly'
+            'targetNode.setAttribute("id","");'
           '}' +
         ');' +
       '});' +
     '});' +
   '</script>'
-}`;
+}`};
 
 module.exports = viewTemplate;

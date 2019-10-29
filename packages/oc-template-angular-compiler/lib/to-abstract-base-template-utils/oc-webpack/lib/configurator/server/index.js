@@ -12,7 +12,7 @@ module.exports = function webpackConfigGenerator(options) {
     options.production !== undefined ? options.production : "true";
 
   const sourceMaps = !production;
-  //const devtool = sourceMaps ? "source-map" : "";
+  const devtool = sourceMaps ? "source-map" : "";
 
   const jsLoaders = [
     {
