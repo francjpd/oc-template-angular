@@ -10,7 +10,10 @@ module.exports = (options, callback) => {
     const getJsFromUrl = createPredicate({
       key,
       url,
-      extractor
+      extractor,
+      globals: {
+        Zone
+      }
     });
 
     tryGetCached("angularComponent", key, getJsFromUrl, (err, CachedApp) => {
@@ -18,15 +21,11 @@ module.exports = (options, callback) => {
       try {
         console.log("render!");
         platformBrowserDynamic().bootstrapModule(CachedApp);
-        // const reactHtml = ReactDOMServer.renderToString(
-        //   React.createElement(CachedApp, props)
-        // );
-
-        // const html = options.template(
-        //   Object.assign({}, options.model, {
-        //     __html: reactHtml
-        //   })
-        // );
+        const html = options.template(
+          Object.assign({}, options.model, {
+            __html: '<p>render!</worked>'
+          })
+        );
         return callback(null, html);
       } catch (error) {
         return callback(error);
