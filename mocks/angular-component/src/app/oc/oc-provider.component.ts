@@ -1,10 +1,10 @@
 
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { Subscription } from 'rxjs';
-// import { AngularComponent } from 'C:\Users\n225273\projects\oc-template-angular\mocks\angular-component';
+// import { AngularComponent } from 'C:\Users\francjpd\projects\oc-template-angular\mocks\angular-component';
 
 @Component({
-  selector: 'oc-provider',
+  selector: 'oc-provider-angular-component',
   template: '<angular-component></angular-component>'
 })
 export class OcProviderComponent implements OnInit {

@@ -6,7 +6,7 @@ import { Subscription } from 'rxjs';
 // import { ${pascalcase(name)} } from '${path}';
 
 @Component({
-  selector: 'oc-provider',
+  selector: 'oc-provider-${name}',
   template: '<${name}></${name}>'
 })
 export class OcProviderComponent implements OnInit {
