@@ -9,10 +9,12 @@ const path = require("path");
 const angularComponentWrapper = require("oc-angular-component-wrapper");
 const strings = require("oc-templates-messages");
 const { execSync } = require('child_process');
+const rimraf = require("rimraf");
 const ocProviderComponentTemplate = require("./oc-provider/oc-provider.component.template");
 const ocProviderModuleTemplate = require("./oc-provider/oc-provider.module.template");
 const ocMainTemplate = require("./oc-main/oc-main.template");
-const ocProviderFactory = require("./oc-provider/oc-Provider-factory");
+// const ocPatchRouteTemplate = require("./oc-patch-route/oc-patch-route.component.template");
+const ocProviderFactory = require("./utils/oc-provider-factory");
 
 const {
   compiler,
@@ -29,7 +31,8 @@ module.exports = (options, callback) => {
     viewPath = viewPath.split("\\").join("\\\\");
   }
   const publishPath = options.publishPath;
-  const tempPath = path.join(publishPath, "src", "app", "oc");
+  const tempPath = path.join(publishPath, "temp");
+  const ocPath = path.join(componentPath, "src", "app", "oc");
   const publishFileName = options.publishFileName || "template.js";
   const componentPackage = options.componentPackage;
   const { getInfo } = require("../index");
@@ -40,24 +43,32 @@ module.exports = (options, callback) => {
   const ocProviderComponent = {
     name: 'oc-provider.component.ts',
     content: ocProviderFactory(options.componentPackage.name, options.componentPath, ocProviderComponentTemplate),
-    path: path.join(tempPath, 'oc-provider.component.ts')
+    path: path.join(ocPath, 'oc-provider.component.ts')
   }
+
+  // const ocPatchRouteComponent = {
+  //   name: 'oc-patch-route.component.ts',
+  //   content: ocProviderFactory(options.componentPackage.name, viewPath, ocPatchRouteTemplate),
+  //   path: path.join(ocPath, 'oc-patch-route.component.ts')
+  // }
 
   const ocProviderModule = {
     name: 'oc-provider.module.ts',
     content: ocProviderFactory(options.componentPackage.name, viewPath, ocProviderModuleTemplate),
-    path: path.join(tempPath, 'oc-provider.module.ts')
+    path: path.join(ocPath, 'oc-provider.module.ts')
   }
+
+
 
   const ocMain = {
     name: 'main.ts',
     content: ocProviderFactory(options.componentPackage.name, viewPath, ocMainTemplate),
-    path: path.join(tempPath, 'main.ts')
+    path: path.join(ocPath, 'main.ts')
   }
 
   const compile = (options, cb) => {
 
-    execSync(`ng build --output-path=${tempPath} --main=${ocMain.path} --crossOrigin=none --prod=true --optimization=false --baseHref=${componentPath} --output-hashing none`);
+    execSync(`ng build --output-path=${tempPath} --main=src/app/oc/main.ts --crossOrigin=none --prod=true --optimization=false --baseHref=${componentPath} --output-hashing none`);
     const config = webpackConfigurator({
       viewPath: path.join(tempPath, 'main-es2015.js'),
       externals: externals.reduce((externals, dep) => {
@@ -108,17 +119,19 @@ module.exports = (options, callback) => {
   async.waterfall(
     [
       (next) => fs.outputFile(ocProviderComponent.path, ocProviderComponent.content, next),
+      // (next) => fs.outputFile(ocPatchRouteComponent.path, ocProviderModule.content, next),
       (next) => fs.outputFile(ocProviderModule.path, ocProviderModule.content, next),
       (next) => fs.outputFile(ocMain.path, ocMain.content, next),
       (next) => compile({ viewPath: path.join(componentPath, '/src/main.ts') }, next),
-      (next) => fs.rmdir(tempPath, next),
       (compiled, next) => fs.ensureDir(publishPath, err => next(err, compiled)),
-      (compiled, next) =>
-        fs.writeFile(
+      (compiled, next) => {
+        rimraf.sync(ocPath);
+        return fs.writeFile(
           path.join(publishPath, publishFileName),
           compiled.template.view,
           err => next(err, compiled)
         )
+      }
 
     ],
     (err, compiled) => {
