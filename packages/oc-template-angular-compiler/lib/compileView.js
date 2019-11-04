@@ -68,7 +68,7 @@ module.exports = (options, callback) => {
 
   const compile = (options, cb) => {
 
-    execSync(`ng build --output-path=${tempPath} --main=src/app/oc/main.ts --crossOrigin=none --prod=true --optimization=false --baseHref=${componentPath} --output-hashing none`);
+    execSync(`ng build --output-path=${tempPath} --main=src/app/oc/main.ts --crossOrigin=none --prod=true --baseHref=${componentPath} --output-hashing none`);
     const config = webpackConfigurator({
       viewPath: path.join(tempPath, 'main-es2015.js'),
       externals: externals.reduce((externals, dep) => {
@@ -96,9 +96,10 @@ module.exports = (options, callback) => {
       const wrappedBundle = angularComponentWrapper(bundleHash, bundle);
       fs.outputFileSync(bundlePath, wrappedBundle);
 
-      const angularRoot = `oc-angularRoot-${componentPackage.name}`;
+      const angularRoot = `oc-angular-${componentPackage.name}`;
       const templateString = viewTemplate({
         angularRoot,
+        componentName: componentPackage.name,
         externals,
         bundleHash,
         bundleName

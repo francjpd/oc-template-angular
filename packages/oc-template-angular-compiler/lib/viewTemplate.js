@@ -1,4 +1,5 @@
 const viewTemplate = ({
+  componentName,
   angularRoot,
   css,
   externals,
@@ -12,9 +13,8 @@ const viewTemplate = ({
     var staticPath = model.angularComponent.props._staticPath;
     var props = JSON.stringify(model.angularComponent.props);
     return \`
-    <base href="/">
     <div id="${angularRoot}" class="${angularRoot}">
-      <oc-provider></oc-provider>
+      <oc-provider-${componentName}></oc-provider-${componentName}>
       \${modelHTML}
     </div> 
       ${cssStyleTag}
