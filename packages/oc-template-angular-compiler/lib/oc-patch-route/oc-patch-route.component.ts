@@ -2,9 +2,9 @@
 import { Component } from '@angular/core';
 
 @Component({
-    selector: 'oc-provider-empty-route',
+    selector: 'oc-patch-route',
     template: '',
 })
 
 // @ts-ignore
-export class PatchRouteComponent { }
+export class OcPatchRouteComponent { }
