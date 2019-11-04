@@ -1,5 +1,6 @@
 const createPredicate = require("./to-be-published/get-js-from-url");
 const tryGetCached = require("./to-be-published/try-get-cached");
+const Zone = require('zone.js');
 
 module.exports = (options, callback) => {
   try {
@@ -23,7 +24,7 @@ module.exports = (options, callback) => {
         platformBrowserDynamic().bootstrapModule(CachedApp);
         const html = options.template(
           Object.assign({}, options.model, {
-            __html: '<p>render!</worked>'
+            __html: '<p>render!</p>'
           })
         );
         return callback(null, html);

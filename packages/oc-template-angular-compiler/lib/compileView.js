@@ -9,6 +9,10 @@ const path = require("path");
 const angularComponentWrapper = require("oc-angular-component-wrapper");
 const strings = require("oc-templates-messages");
 const { execSync } = require('child_process');
+const ocProviderComponentTemplate = require("./oc-provider/oc-provider.component.template");
+const ocProviderModuleTemplate = require("./oc-provider/oc-provider.module.template");
+const ocMainTemplate = require("./oc-main/oc-main.template");
+const ocProviderFactory = require("./oc-provider/oc-Provider-factory");
 
 const {
   compiler,
@@ -25,7 +29,7 @@ module.exports = (options, callback) => {
     viewPath = viewPath.split("\\").join("\\\\");
   }
   const publishPath = options.publishPath;
-  const tempPath = path.join(publishPath, "temp");
+  const tempPath = path.join(publishPath, "src", "app", "oc");
   const publishFileName = options.publishFileName || "template.js";
   const componentPackage = options.componentPackage;
   const { getInfo } = require("../index");
@@ -33,9 +37,27 @@ module.exports = (options, callback) => {
   const production = options.production;
 
 
+  const ocProviderComponent = {
+    name: 'oc-provider.component.ts',
+    content: ocProviderFactory(options.componentPackage.name, options.componentPath, ocProviderComponentTemplate),
+    path: path.join(tempPath, 'oc-provider.component.ts')
+  }
+
+  const ocProviderModule = {
+    name: 'oc-provider.module.ts',
+    content: ocProviderFactory(options.componentPackage.name, viewPath, ocProviderModuleTemplate),
+    path: path.join(tempPath, 'oc-provider.module.ts')
+  }
+
+  const ocMain = {
+    name: 'main.ts',
+    content: ocProviderFactory(options.componentPackage.name, viewPath, ocMainTemplate),
+    path: path.join(tempPath, 'main.ts')
+  }
+
   const compile = (options, cb) => {
 
-    execSync(`ng build --output-path=${tempPath} --crossOrigin=none --prod=true --optimization=false --baseHref=${componentPath} --output-hashing none`);
+    execSync(`ng build --output-path=${tempPath} --main=${ocMain.path} --crossOrigin=none --prod=true --optimization=false --baseHref=${componentPath} --output-hashing none`);
     const config = webpackConfigurator({
       viewPath: path.join(tempPath, 'main-es2015.js'),
       externals: externals.reduce((externals, dep) => {
@@ -63,7 +85,6 @@ module.exports = (options, callback) => {
       const wrappedBundle = angularComponentWrapper(bundleHash, bundle);
       fs.outputFileSync(bundlePath, wrappedBundle);
 
-
       const angularRoot = `oc-angularRoot-${componentPackage.name}`;
       const templateString = viewTemplate({
         angularRoot,
@@ -86,7 +107,11 @@ module.exports = (options, callback) => {
 
   async.waterfall(
     [
+      (next) => fs.outputFile(ocProviderComponent.path, ocProviderComponent.content, next),
+      (next) => fs.outputFile(ocProviderModule.path, ocProviderModule.content, next),
+      (next) => fs.outputFile(ocMain.path, ocMain.content, next),
       (next) => compile({ viewPath: path.join(componentPath, '/src/main.ts') }, next),
+      (next) => fs.rmdir(tempPath, next),
       (compiled, next) => fs.ensureDir(publishPath, err => next(err, compiled)),
       (compiled, next) =>
         fs.writeFile(
@@ -94,6 +119,7 @@ module.exports = (options, callback) => {
           compiled.template.view,
           err => next(err, compiled)
         )
+
     ],
     (err, compiled) => {
       if (err) {
