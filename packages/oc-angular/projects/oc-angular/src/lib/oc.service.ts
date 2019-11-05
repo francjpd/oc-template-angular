@@ -1,42 +1,45 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { Context } from './oc-context.interface';
 
 @Injectable({
   providedIn: 'root'
 })
 export class OcService {
-  public params: BehaviorSubject<any> = new BehaviorSubject(null);
   public oc = (window as any).oc;
 
+  public props: BehaviorSubject<Context> = new BehaviorSubject(null);
+  private name: string;
+  private version: string;
+  private baseUrl: string;
+  private staticPath: string;
+
   constructor() {
-    (window as any).oc.events.on('oc-params:oc-navbar', (event: any, params: any) => {
-      this.params.next(params);
+    this.oc.events.on('oc-params:oc-navbar', (event: any, params: Context) => {
+      if (params != null) {
+        this.name = params.params.name;
+        this.version = params.templates[0].version;
+        this.baseUrl = params.baseUrl;
+        this.staticPath = params.staticPath;
+        this.props.next(params);
+      }
     });
-    (window as any).oc.events.fire('oc-params-initialized:oc-navbar');
+    this.oc.events.fire('oc-params-initialized:oc-navbar');
   }
 
-  getData(providerProps: any, parameters: any, cb: (error: any, parameters?: any, props?: any) => void) {
-    return (window as any).oc.getData({
-      name: providerProps._componentName,
-      version: providerProps._componentVersion,
-      baseUrl: providerProps._baseUrl,
+  getData(parameters: any, cb: (error: any, parameters?: any, props?: any) => void) {
+    return this.oc.getData({
+      name: this.name,
+      version: this.version,
+      baseUrl: this.baseUrl,
       parameters
     }, (err: any, data: any) => {
       if (err) {
         return cb(err);
       }
-      const { _staticPath, _baseUrl, _componentName, _componentVersion, ...rest } = (data.reactComponent.props as any);
-      cb(null, rest, data.reactComponent.props);
+      console.log('data from getData', data);
+      cb(null, data, data);
     });
   }
 
-  getSetting(providerProps: any, setting: string) {
-    const settingHash = {
-      name: providerProps._componentName,
-      version: providerProps._componentVersion,
-      baseUrl: providerProps._baseUrl,
-      staticPath: providerProps._staticPath
-    };
-    return (settingHash as any)[setting];
-  }
 }
