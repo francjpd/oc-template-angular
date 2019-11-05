@@ -36,13 +36,6 @@ module.exports = options => {
       filename: options.publishFileName
     },
     externals: _.omit(options.externals, polyfills),
-    plugins,
-    resolve: {
-      // alias: {
-      //   react: path.join(__dirname, "../../node_modules/react"),
-      //   "react-dom": path.join(__dirname, "../../node_modules/react-dom"),
-      //   "prop-types": path.join(__dirname, "../../node_modules/prop-types")
-      // }
-    }
+    plugins
   };
 };

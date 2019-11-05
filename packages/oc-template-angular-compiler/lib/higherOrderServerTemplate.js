@@ -8,7 +8,7 @@ const higherOrderServerTemplate = ({
   componentVersion
 }) => `
 import { data as dataProvider } from '${removeTsExtension(serverPath)}';
-import { Context } from 'oc-template-angular-compiler/lib/utils/oc-context.interface';
+import { Context } from 'oc-angular';
 
 export const data = (context : Context, callback : (error: any, data?: any) => void) => {
   dataProvider(context, (error: any, model: any) => {
