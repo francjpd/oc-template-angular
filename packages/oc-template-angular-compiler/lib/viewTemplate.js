@@ -1,5 +1,4 @@
 const viewTemplate = ({
-  componentName,
   angularRoot,
   css,
   externals,
@@ -13,10 +12,8 @@ const viewTemplate = ({
     var staticPath = model.angularComponent.props._staticPath;
     var props = JSON.stringify(model.angularComponent.props);
     return \`
-    <div id="${angularRoot}" class="${angularRoot}">
-      <oc-provider-${componentName}></oc-provider-${componentName}>
+      <oc-root-${angularRoot}></oc-root-${angularRoot}>
       \${modelHTML}
-    </div> 
       ${cssStyleTag}
       <script>
         window.oc = window.oc || {};
@@ -28,8 +25,10 @@ const viewTemplate = ({
             ["oc", "angularComponents", "${bundleHash}"],
             "\${staticPath}${bundleName}.js",
             function(AngularComponent){
-              var targetNode = document.getElementById("${angularRoot}");
-              targetNode.setAttribute("id","");
+              oc.events.fire("oc-params:${angularRoot}", \${props});
+              oc.events.on('oc-params-initialized:${angularRoot}', () => {
+                oc.events.fire("oc-params:${angularRoot}", \${props});
+              });
             }
           );
         });

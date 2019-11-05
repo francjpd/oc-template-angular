@@ -16,7 +16,7 @@ const higherOrderServerTemplate = require("./higherOrderServerTemplate");
 module.exports = (options, callback) => {
   const serverFileName = options.componentPackage.oc.files.data;
   let serverPath = path.join(options.componentPath, serverFileName);
-  let ocContextPath = path.join(options.componentPath,"oc", "oc-ontext.ts");
+  let ocContextPath = path.join(options.componentPath,"oc", "oc-context.ts");
   if (process.platform === "win32") {
     serverPath = serverPath.split("\\").join("\\\\");
     ocContextPath = ocContextPath.split("\\").join("\\\\");
