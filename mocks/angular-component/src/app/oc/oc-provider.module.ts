@@ -3,13 +3,13 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { OcProviderComponent } from './oc-provider.component';
-import { AngularComponentModule } from 'src/app/angular-component.module';
+import { OcNavbarModule } from 'src/app/oc-navbar.module';
 
 @NgModule({
   imports: [
     BrowserModule,
     CommonModule,
-    AngularComponentModule
+    OcNavbarModule
   ],
   declarations: [
     OcProviderComponent

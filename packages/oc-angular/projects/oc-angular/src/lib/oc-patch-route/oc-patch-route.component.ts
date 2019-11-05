@@ -1,4 +1,4 @@
-module.exports = (name, path) => `
+
 import { Component } from '@angular/core';
 
 @Component({
@@ -8,5 +8,3 @@ import { Component } from '@angular/core';
 
 // @ts-ignore
 export class OcPatchRouteComponent { }
-
-`;

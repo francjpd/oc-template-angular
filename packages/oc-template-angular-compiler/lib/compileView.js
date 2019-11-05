@@ -10,11 +10,11 @@ const angularComponentWrapper = require("oc-angular-component-wrapper");
 const strings = require("oc-templates-messages");
 const { execSync } = require('child_process');
 const rimraf = require("rimraf");
-const ocProviderComponentTemplate = require("./oc-provider/oc-provider.component.template");
-const ocProviderModuleTemplate = require("./oc-provider/oc-provider.module.template");
+const ocRootComponentTemplate = require("./oc-root/oc-root.component.template");
+const ocRootModuleTemplate = require("./oc-root/oc-root.module.template");
 const ocMainTemplate = require("./oc-main/oc-main.template");
-// const ocPatchRouteTemplate = require("./oc-patch-route/oc-patch-route.component.template");
-const ocProviderFactory = require("./utils/oc-provider-factory");
+// const ocParamsServiceTemplate = require("./oc-params-service/oc-params-service.service.template");
+const ocFactory = require("./utils/oc-factory");
 
 const {
   compiler,
@@ -40,29 +40,21 @@ module.exports = (options, callback) => {
   const production = options.production;
 
 
-  const ocProviderComponent = {
-    name: 'oc-provider.component.ts',
-    content: ocProviderFactory(options.componentPackage.name, options.componentPath, ocProviderComponentTemplate),
-    path: path.join(ocPath, 'oc-provider.component.ts')
+  const ocRootComponent = {
+    name: 'oc-root.component.ts',
+    content: ocFactory(options.componentPackage.name, options.componentPath, ocRootComponentTemplate),
+    path: path.join(ocPath, 'oc-root.component.ts')
   }
 
-  // const ocPatchRouteComponent = {
-  //   name: 'oc-patch-route.component.ts',
-  //   content: ocProviderFactory(options.componentPackage.name, viewPath, ocPatchRouteTemplate),
-  //   path: path.join(ocPath, 'oc-patch-route.component.ts')
-  // }
-
-  const ocProviderModule = {
-    name: 'oc-provider.module.ts',
-    content: ocProviderFactory(options.componentPackage.name, viewPath, ocProviderModuleTemplate),
-    path: path.join(ocPath, 'oc-provider.module.ts')
+  const ocRootModule = {
+    name: 'oc-root.module.ts',
+    content: ocFactory(options.componentPackage.name, viewPath, ocRootModuleTemplate),
+    path: path.join(ocPath, 'oc-root.module.ts')
   }
-
-
 
   const ocMain = {
     name: 'main.ts',
-    content: ocProviderFactory(options.componentPackage.name, viewPath, ocMainTemplate),
+    content: ocFactory(options.componentPackage.name, viewPath, ocMainTemplate),
     path: path.join(ocPath, 'main.ts')
   }
 
@@ -96,10 +88,9 @@ module.exports = (options, callback) => {
       const wrappedBundle = angularComponentWrapper(bundleHash, bundle);
       fs.outputFileSync(bundlePath, wrappedBundle);
 
-      const angularRoot = `oc-angular-${componentPackage.name}`;
+      const angularRoot = `${componentPackage.name}`;
       const templateString = viewTemplate({
         angularRoot,
-        componentName: componentPackage.name,
         externals,
         bundleHash,
         bundleName
@@ -115,18 +106,19 @@ module.exports = (options, callback) => {
         bundle: { hash: bundleHash }
       });
     });
+
+    rimraf.sync(ocPath);
   };
 
   async.waterfall(
     [
-      (next) => fs.outputFile(ocProviderComponent.path, ocProviderComponent.content, next),
-      // (next) => fs.outputFile(ocPatchRouteComponent.path, ocProviderModule.content, next),
-      (next) => fs.outputFile(ocProviderModule.path, ocProviderModule.content, next),
+      (next) => fs.outputFile(ocRootComponent.path, ocRootComponent.content, next),
+      // (next) => fs.outputFile(ocParamsService.path, ocParamsService.content, next),
+      (next) => fs.outputFile(ocRootModule.path, ocRootModule.content, next),
       (next) => fs.outputFile(ocMain.path, ocMain.content, next),
       (next) => compile({ viewPath: path.join(componentPath, '/src/main.ts') }, next),
       (compiled, next) => fs.ensureDir(publishPath, err => next(err, compiled)),
       (compiled, next) => {
-        rimraf.sync(ocPath);
         return fs.writeFile(
           path.join(publishPath, publishFileName),
           compiled.template.view,

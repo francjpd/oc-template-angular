@@ -1,7 +1,7 @@
 
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { Subscription } from 'rxjs';
-// import { AngularComponent } from 'C:\Users\francjpd\projects\oc-template-angular\mocks\invalid-jsx-component';
+// import { AngularComponent } from 'C:\Users\n225273\projects\oc-template-angular\mocks\invalid-jsx-component';
 
 @Component({
   selector: 'oc-provider-angular-component',

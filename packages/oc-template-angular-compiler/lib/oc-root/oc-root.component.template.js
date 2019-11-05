@@ -3,19 +3,13 @@ const pascalcase = require('pascalcase');
 module.exports = (name, path) => `
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { Subscription } from 'rxjs';
-// import { ${pascalcase(name)} } from '${path}';
 
 @Component({
-  selector: 'oc-provider-${name}',
+  selector: 'oc-root-${name}',
   template: '<${name}></${name}>'
 })
-export class OcProviderComponent implements OnInit {
-  title = 'oc-provider';
-  
-  @Input() _staticPath: string;
-  @Input() _baseUrl: string;
-  @Input() _componentName : string;
-  @Input() _componentVersion: string;
+export class OcRootComponent implements OnInit {
+  title = 'oc-provider-${name}';
 
   ngOnInit() {
     (window as any).oc.events.fire('oc:componentDidMount');
