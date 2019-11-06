@@ -11,7 +11,6 @@ module.exports = ({ url, key, globals, timeout = 5000, extractor }) => cb => {
         }
       });
     }
-    console.log("get-js-from-url");
     const context = Object.assign({}, globals);
 
     try {

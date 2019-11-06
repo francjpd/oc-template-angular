@@ -8,38 +8,38 @@ import { Context } from './oc-context.interface';
 export class OcService {
   public oc = (window as any).oc;
 
-  public props: BehaviorSubject<Context> = new BehaviorSubject(null);
-  private name: string;
-  private version: string;
+  public context: BehaviorSubject<Context> = new BehaviorSubject(null);
+
+  private params!: any;
+  private componentVersion!: string;
+  private componentName!: string;
   private baseUrl: string;
   private staticPath: string;
 
-  constructor() {
-    this.oc.events.on('oc-params:oc-navbar', (event: any, params: Context) => {
-      if (params != null) {
-        this.name = params.params.name;
-        this.version = params.templates[0].version;
-        this.baseUrl = params.baseUrl;
-        this.staticPath = params.staticPath;
-        this.props.next(params);
-      }
-    });
-    this.oc.events.fire('oc-params-initialized:oc-navbar');
+  setBasicData(value: any) {
+    this.params = value._params;
+    this.componentVersion = value._componentVersion;
+    this.componentName = value._componentName;
+    this.baseUrl = value._baseUrl;
+    this.staticPath = value._staticPath;
+
   }
 
   getData(parameters: any, cb: (error: any, parameters?: any, props?: any) => void) {
-    return this.oc.getData({
-      name: this.name,
-      version: this.version,
-      baseUrl: this.baseUrl,
-      parameters
-    }, (err: any, data: any) => {
-      if (err) {
-        return cb(err);
-      }
-      console.log('data from getData', data);
-      cb(null, data, data);
-    });
+    if (this.context.value != null) {
+      return this.oc.getData({
+        name: this.componentName,
+        version: this.componentVersion,
+        baseUrl: this.baseUrl,
+        parameters
+      }, (err: any, data: any) => {
+        if (err) {
+          return cb(err);
+        }
+        cb(null, data, data);
+      });
+
+    }
   }
 
 }

@@ -113,7 +113,6 @@ module.exports = (options, callback) => {
   async.waterfall(
     [
       (next) => fs.outputFile(ocRootComponent.path, ocRootComponent.content, next),
-      // (next) => fs.outputFile(ocParamsService.path, ocParamsService.content, next),
       (next) => fs.outputFile(ocRootModule.path, ocRootModule.content, next),
       (next) => fs.outputFile(ocMain.path, ocMain.content, next),
       (next) => compile({ viewPath: path.join(componentPath, '/src/main.ts') }, next),

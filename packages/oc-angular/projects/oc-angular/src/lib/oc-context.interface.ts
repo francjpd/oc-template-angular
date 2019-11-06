@@ -1,4 +1,8 @@
-import { Params } from './params.interface';
+export interface Params {
+    __oc_Retry: string;
+    name: string;
+    getMoreData: boolean;
+}
 
 export interface AcceptLanguage {
     code: string;
