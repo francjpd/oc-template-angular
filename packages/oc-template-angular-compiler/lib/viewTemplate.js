@@ -25,9 +25,9 @@ const viewTemplate = ({
             ["oc", "angularComponents", "${bundleHash}"],
             "\${staticPath}${bundleName}.js",
             function(AngularComponent){
-              oc.events.fire("oc-params:${angularRoot}", \${props});
-              oc.events.on('oc-params-initialized:${angularRoot}', () => {
-                oc.events.fire("oc-params:${angularRoot}", \${props});
+              oc.events.fire("oc-angular-init:${angularRoot}", \${props});
+              oc.events.on('oc-params-created:${angularRoot}', () => {
+                oc.events.fire("oc-angular-init:${angularRoot}", \${props});
               });
             }
           );

@@ -16,10 +16,10 @@ const higherOrderServerTemplate = require("./higherOrderServerTemplate");
 module.exports = (options, callback) => {
   const serverFileName = options.componentPackage.oc.files.data;
   let serverPath = path.join(options.componentPath, serverFileName);
-  let ocContextPath = path.join(options.componentPath,"oc", "oc-context.ts");
+  let contextPath = path.join(options.componentPath, "node_modules", "oc-angular", "src", "oc-context.interface.ts");
   if (process.platform === "win32") {
     serverPath = serverPath.split("\\").join("\\\\");
-    ocContextPath = ocContextPath.split("\\").join("\\\\");
+    contextPath = contextPath.split("\\").join("\\\\");
   }
   const publishFileName = options.publishFileName || "server.js";
   const publishPath = options.publishPath;
@@ -31,7 +31,7 @@ module.exports = (options, callback) => {
 
   const higherOrderServerContent = higherOrderServerTemplate({
     serverPath,
-    ocContextPath,
+    contextPath,
     componentName,
     componentVersion,
     bundleHashKey: options.compiledViewInfo.bundle.hashKey
@@ -95,12 +95,12 @@ module.exports = (options, callback) => {
               err
                 ? null
                 : {
-                    type: "node.js",
-                    hashKey: hashBuilder.fromString(
-                      compiledFiles[publishFileName]
-                    ),
-                    src: publishFileName
-                  }
+                  type: "node.js",
+                  hashKey: hashBuilder.fromString(
+                    compiledFiles[publishFileName]
+                  ),
+                  src: publishFileName
+                }
             )
         )
     ],

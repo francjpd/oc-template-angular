@@ -5,7 +5,6 @@ const cache = new Cache({});
 
 module.exports = function(type, key, predicate, callback) {
   const cached = cache.get(type, key);
-  console.log("try-get-cached");
   if (cached) {
     return callback(null, cached);
   }
