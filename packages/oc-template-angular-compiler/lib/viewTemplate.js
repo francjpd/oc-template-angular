@@ -12,7 +12,7 @@ const viewTemplate = ({
     var staticPath = model.angularComponent.props._staticPath;
     var props = JSON.stringify(model.angularComponent.props);
     return \`
-      <oc-root-${angularRoot}></oc-root-${angularRoot}>
+      <oc-root-${angularRoot} data-hash="${bundleHash}" data-template="angular"></oc-root-${angularRoot}>
       \${modelHTML}
       ${cssStyleTag}
       <script>
@@ -24,7 +24,8 @@ const viewTemplate = ({
             oc.require(
             ["oc", "angularComponents", "${bundleHash}"],
             "\${staticPath}${bundleName}.js",
-            function(AngularComponent){
+            function(angularComponent){
+              angularComponent.getInstance();
               oc.events.fire("oc-angular-init:${angularRoot}", \${props});
               oc.events.on('oc-params-created:${angularRoot}', () => {
                 oc.events.fire("oc-angular-init:${angularRoot}", \${props});
