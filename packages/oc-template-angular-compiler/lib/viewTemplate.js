@@ -24,8 +24,8 @@ const viewTemplate = ({
             oc.require(
             ["oc", "angularComponents", "${bundleHash}"],
             "\${staticPath}${bundleName}.js",
-            function(angularComponent){
-              angularComponent.getInstance();
+            async function(angularComponent){
+              await angularComponent.getInstance();
               oc.events.fire("oc-angular-init:${angularRoot}", \${props});
               oc.events.on('oc-params-created:${angularRoot}', () => {
                 oc.events.fire("oc-angular-init:${angularRoot}", \${props});
