@@ -1,3 +1,5 @@
+Zone - https://github.com/CanopyTax/single-spa-angular/commit/696720f60db5469a2686f0d85200f83c7763f7f9
+
 https://verdaccio.org
 
 
