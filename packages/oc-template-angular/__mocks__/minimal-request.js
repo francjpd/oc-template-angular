@@ -2,11 +2,14 @@ const state = {};
 module.exports = (opts, cb) => {
   var jsText =
     state.jsText ||
-    `var oc = {reactComponents: {}}; oc.reactComponents['666'] = class Hello extends React.Component {
-    render() {
-      return React.createElement("div", null, "Hello World");
-    }
-  }`;
+    `var oc = {
+      angularComponents:{
+        ['666']: {
+          destroy: ${ jest.fn()},
+          getInstance: ${ jest.fn()}
+        }
+      }
+    };`;
   return cb(null, jsText);
 };
 

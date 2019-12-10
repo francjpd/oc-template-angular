@@ -4,7 +4,7 @@ const path = require("path");
 const fs = require("fs-extra");
 const compileServer = require("../lib/compileServer.js");
 
-const componentPath = path.join(__dirname, "../../../mocks/react-component");
+const componentPath = path.join(__dirname, "../../../mocks/angular-component");
 const publishPath = path.join(componentPath, "_packageCompileServerTest");
 const publishFileName = "server.js";
 

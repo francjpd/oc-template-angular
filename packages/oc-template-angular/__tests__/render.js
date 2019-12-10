@@ -5,13 +5,13 @@ jest.mock("../lib/to-be-published/get-js-from-url");
 describe("render method", () => {
   describe("when invoked with a valid template", () => {
     const model = {
-      reactComponent: {
+      angularComponent: {
         key: "de732592e9272bdc000899e1b2c9f6bf3c786e55",
         src:
-          "http://localhost:3030/my-react-component/1.0.0/static/react-component.js",
+          "http://localhost:3030/my-angular-component/1.0.0/static/angular-component.js",
         props: {
           name: "World",
-          staticPath: "http://localhost:3030/my-react-component/1.0.0/static/"
+          staticPath: "http://localhost:3030/my-angular-component/1.0.0/static/"
         }
       }
     };
