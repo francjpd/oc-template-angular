@@ -2,41 +2,41 @@
 
 const MemoryFS = require("memory-fs");
 const webpack = require("webpack");
+const { promisify } = require('util')
 
 const memoryFs = new MemoryFS();
 
-module.exports = function compiler(config, callback) {
+module.exports = async function compiler(config) {
   const logger = config.logger;
   delete config.logger;
 
   const compiler = webpack(config);
   compiler.outputFileSystem = memoryFs;
 
-  compiler.run((error, stats) => {
-    let softError;
-    let warning;
+  const runPromise = promisify(compiler.run);
 
-    // handleFatalError
-    if (error) {
-      return callback(error);
-    }
+  return await runPromise()
+    .then(stats => {
+      // handleSoftErrors
+      if (stats.hasErrors()) {
+        softError = info.errors.toString();
+        throw (softError);
+      }
+      const info = stats.toJson();
 
-    const info = stats.toJson();
-    // handleSoftErrors
-    if (stats.hasErrors()) {
-      softError = info.errors.toString();
-      return callback(softError);
-    }
-    // handleWarnings
-    if (stats.hasWarnings()) {
-      warning = info.warnings.toString();
-    }
+      const log = stats.toString(config.stats || "errors-only");
 
-    const log = stats.toString(config.stats || "errors-only");
+      if (log) {
+        logger.log(log);
+      }
+      return memoryFs.data;
+    })
+    .catch(error => {
+      // handleFatalError
+      if (error) {
+        throw (error);
+      }
 
-    if (log) {
-      logger.log(log);
-    }
-    callback(null, memoryFs.data);
-  });
+
+    });
 };

@@ -4,7 +4,10 @@ const path = require("path");
 const fs = require("fs-extra");
 const compileView = require("../lib/compileView.js");
 
-test("valid component", done => {
+jest.mock('child_process');
+const childProcessMock = require('child_process');
+
+describe('Compile view ', () => {
   const componentPath = path.join(__dirname, "../../../mocks/angular-component");
   const publishPath = path.join(componentPath, "_packageCompileViewTest");
   const publishFileName = "template.js";
@@ -17,7 +20,8 @@ test("valid component", done => {
     production: true
   };
 
-  compileView(options, (err, compiledViewInfo) => {
+  it("Should be a valid compilation", () => {
+    compiledViewInfo = compileView(options);
     compiledViewInfo.bundle.hashKey = "dummyData";
     const viewHashKey = compiledViewInfo.template.hashKey;
     compiledViewInfo.template.hashKey = "dummyData";
@@ -32,28 +36,18 @@ test("valid component", done => {
         )
     ).toMatchSnapshot();
     fs.removeSync(publishPath);
-    done();
+
   });
-});
 
-test("invalid component", done => {
-  const componentPath = path.join(
-    __dirname,
-    "../../../mocks/invalid-jsx-component"
-  );
-  const publishPath = path.join(componentPath, "_packageCompileViewTest2");
-  const publishFileName = "template.js";
+  it("Should handle invaild Ng compilation properly", () => {
+    childProcessMock.setInvalidCompilation();
 
-  const options = {
-    componentPackage: fs.readJsonSync(`${componentPath}/package.json`),
-    componentPath,
-    publishPath,
-    publishFileName,
-    production: true
-  };
+    compileView(options, (err, compiledViewInfo) => {
+      expect(err).toContain("Error during compilation");
+    });
+  });
 
-  compileView(options, (err, compiledViewInfo) => {
-    expect(err).toContain("JSX expressions must have one parent element");
-    done();
+  afterAll(() => {
+    childProcessMock.setValidCompilation();
   });
 });
