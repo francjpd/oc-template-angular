@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "oc-angular-component-wrapper",
   "main": "index.js",
+  "scripts": {
+    "build": "node ./scripts/create-index.js"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/francjpd/oc-template-angular.git"
