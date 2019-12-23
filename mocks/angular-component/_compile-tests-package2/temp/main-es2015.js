@@ -1,1 +1,0 @@
-var bundle = function() { return 'bundle'; }

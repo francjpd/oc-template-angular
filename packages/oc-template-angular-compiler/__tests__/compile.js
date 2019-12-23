@@ -22,7 +22,7 @@ describe.each([
   ['angular-component']
 ])('component', (componentName) => {
 
-  it('should handle the happy path', () => {
+  it('should handle the happy path', (done) => {
     const scenario = {
       componentPackage: componentPackage(componentName),
       ocPackage: {
@@ -38,11 +38,12 @@ describe.each([
 
     execute(scenario, err => {
       expect(err).toBeNull();
+      done();
       fs.removeSync(publishPath);
     });
   })
 
-  it('Should handle empty static folder', () => {
+  it('Should handle empty static folder', (done) => {
     const scenario = {
       componentPackage: (function () {
         const manifest = componentPackage(componentName);
@@ -62,11 +63,12 @@ describe.each([
 
     execute(scenario, err => {
       expect(err).toBeNull();
+      done();
       fs.removeSync(publishPath);
     });
   });
 
-  it('Should handle server.js-less components', () => {
+  it('Should handle server.js-less components', (done) => {
     const scenario = {
       componentPackage: (function () {
         const manifest = componentPackage(componentName);
@@ -86,6 +88,7 @@ describe.each([
 
     execute(scenario, err => {
       expect(err).toBeNull();
+      done();
       fs.removeSync(publishPath);
     });
   })

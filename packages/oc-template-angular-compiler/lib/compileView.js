@@ -57,7 +57,7 @@ module.exports = (options, callback) => {
     path: path.join(ocPath, 'main.ts')
   }
 
-  const compile = (options, callbackCompile) => {
+  const compile = (callbackCompile) => {
 
     execSync(`ng build --output-path=${tempPath} --main=src/app/oc/main.ts --crossOrigin=none --prod=true --baseHref=${componentPath} --output-hashing none`);
     const angularCompiledBundle = path.join(tempPath, 'main-es2015.js');
@@ -108,21 +108,19 @@ module.exports = (options, callback) => {
       const hash = hashBuilder.fromString(templateStringCompressed);
       const view = ocViewWrapper(hash, templateStringCompressed);
 
-
-      rimraf.sync(ocPath);
-
-      return {
+      return callbackCompile(null, {
         template: { view, hash },
         bundle: { hash: bundleHash }
-      }
+      })
     })
+    rimraf.sync(ocPath);
   };
 
   outputFileSync(ocRootComponent.path, ocRootComponent.content);
   outputFileSync(ocRootModule.path, ocRootModule.content);
   outputFileSync(ocMain.path, ocMain.content);
 
-  compile({ viewPath: path.join(componentPath, '/src/main.ts') }, (err, compiled) => {
+  compile((err, compiled) => {
     if (err) {
       callback(strings.errors.compilationFailed(viewFileName, err))
     }
