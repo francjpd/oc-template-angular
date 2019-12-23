@@ -8,6 +8,7 @@ jest.mock('child_process');
 const childProcessMock = require('child_process');
 
 describe('Compile view ', () => {
+  jest.useFakeTimers();
   const componentPath = path.join(__dirname, "../../../mocks/angular-component");
   const publishPath = path.join(componentPath, "_packageCompileViewTest");
   const publishFileName = "template.js";
@@ -21,33 +22,32 @@ describe('Compile view ', () => {
   };
 
   it("Should be a valid compilation", () => {
-    compiledViewInfo = compileView(options);
-    compiledViewInfo.bundle.hashKey = "dummyData";
-    const viewHashKey = compiledViewInfo.template.hashKey;
-    compiledViewInfo.template.hashKey = "dummyData";
-    expect(compiledViewInfo).toMatchSnapshot();
-    expect(
-      fs
-        .readFileSync(path.join(publishPath, publishFileName), "UTF8")
-        .replace(viewHashKey, "dummyData")
-        .replace(
-          /\[\"oc\",.*?\"angularComponents\",.*?\".*?\"\]/g,
-          '["oc", "angularComponents", "dummyContent"]'
-        )
-    ).toMatchSnapshot();
-    fs.removeSync(publishPath);
-
+    compileView(options, (err, compiledViewInfo) => {
+      compiledViewInfo.bundle.hashKey = "dummyData";
+      const viewHashKey = compiledViewInfo.template.hashKey;
+      compiledViewInfo.template.hashKey = "dummyData";
+      expect(compiledViewInfo).toMatchSnapshot();
+      expect(
+        fs
+          .readFileSync(path.join(publishPath, publishFileName), "UTF8")
+          .replace(viewHashKey, "dummyData")
+          .replace(
+            /\[\"oc\",.*?\"angularComponents\",.*?\".*?\"\]/g,
+            '["oc", "angularComponents", "dummyContent"]'
+          )
+      ).toMatchSnapshot();
+      fs.removeSync(publishPath);
+    });
   });
 
   it("Should handle invaild Ng compilation properly", () => {
     childProcessMock.setInvalidCompilation();
-
-    compileView(options, (err, compiledViewInfo) => {
-      expect(err).toContain("Error during compilation");
+    compileView(options, (err) => {
+      expect(err).toContain("Angular compilation failed");
     });
   });
 
-  afterAll(() => {
+  afterEach(() => {
     childProcessMock.setValidCompilation();
-  });
+  })
 });

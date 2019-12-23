@@ -1,7 +1,6 @@
 "use strict";
 
-const async = require("async");
-const { outputFileSync, ensureDirSync, writeFileSync, existsSync } = require("fs-extra");
+const { outputFileSync, writeFileSync, existsSync } = require("fs-extra");
 const hashBuilder = require("oc-hash-builder");
 const MemoryFS = require("memory-fs");
 const ocViewWrapper = require("oc-view-wrapper");
@@ -23,7 +22,7 @@ const {
 
 const viewTemplate = require("./viewTemplate");
 
-module.exports = (options) => {
+module.exports = (options, callback) => {
   const viewFileName = options.componentPackage.oc.files.template.src;
   let viewPath = path.join(options.componentPath, viewFileName);
   const componentPath = options.componentPath;
@@ -58,13 +57,13 @@ module.exports = (options) => {
     path: path.join(ocPath, 'main.ts')
   }
 
-  const compile = async (options) => {
+  const compile = (options, callbackCompile) => {
 
     execSync(`ng build --output-path=${tempPath} --main=src/app/oc/main.ts --crossOrigin=none --prod=true --baseHref=${componentPath} --output-hashing none`);
     const angularCompiledBundle = path.join(tempPath, 'main-es2015.js');
 
     if (!existsSync(angularCompiledBundle)) {
-      throw new Error('Angular compilation failed');
+      callbackCompile(new Error('Angular compilation failed'));
     }
     const config = webpackConfigurator({
       viewPath: angularCompiledBundle,
@@ -77,63 +76,65 @@ module.exports = (options) => {
       buildIncludes: componentPackage.oc.files.template.buildIncludes || []
     });
 
-    const data = await compiler(config)
+    compiler(config, (err, data) => {
 
-    const memoryFs = new MemoryFS(data);
-    const bundle = memoryFs.readFileSync(
-      `/build/${config.output.filename}`,
-      "UTF8"
-    );
+      if (err) {
+        return callbackCompile(err);
+      }
 
-    const bundleHash = hashBuilder.fromString(bundle);
-    const bundleName = "angular-component";
-    const bundlePath = path.join(publishPath, `${bundleName}.js`);
-    const wrappedBundle = angularComponentWrapper(bundleHash, bundle);
-    outputFileSync(bundlePath, wrappedBundle);
+      const memoryFs = new MemoryFS(data);
+      const bundle = memoryFs.readFileSync(
+        `/build/${config.output.filename}`,
+        "UTF8"
+      );
 
-    const angularRoot = `${componentPackage.name}`;
-    const templateString = viewTemplate({
-      angularRoot,
-      externals,
-      bundleHash,
-      bundleName
-    });
+      const bundleHash = hashBuilder.fromString(bundle);
+      const bundleName = "angular-component";
+      const bundlePath = path.join(publishPath, `${bundleName}.js`);
+      const wrappedBundle = angularComponentWrapper(bundleHash, bundle);
+      outputFileSync(bundlePath, wrappedBundle);
 
-    const templateStringCompressed = production
-      ? templateString.replace(/\s+/g, " ")
-      : templateString;
-    const hash = hashBuilder.fromString(templateStringCompressed);
-    const view = ocViewWrapper(hash, templateStringCompressed);
+      const angularRoot = `${componentPackage.name}`;
+      const templateString = viewTemplate({
+        angularRoot,
+        externals,
+        bundleHash,
+        bundleName
+      });
+
+      const templateStringCompressed = production
+        ? templateString.replace(/\s+/g, " ")
+        : templateString;
+      const hash = hashBuilder.fromString(templateStringCompressed);
+      const view = ocViewWrapper(hash, templateStringCompressed);
 
 
-    rimraf.sync(ocPath);
+      rimraf.sync(ocPath);
 
-    return {
-      template: { view, hash },
-      bundle: { hash: bundleHash }
-    }
-
+      return {
+        template: { view, hash },
+        bundle: { hash: bundleHash }
+      }
+    })
   };
 
-  try {
-    outputFileSync(ocRootComponent.path, ocRootComponent.content)
-    outputFileSync(ocRootModule.path, ocRootModule.content)
-    outputFileSync(ocMain.path, ocMain.content)
+  outputFileSync(ocRootComponent.path, ocRootComponent.content);
+  outputFileSync(ocRootModule.path, ocRootModule.content);
+  outputFileSync(ocMain.path, ocMain.content);
 
-    const compiled = compile({ viewPath: path.join(componentPath, '/src/main.ts') });
-
+  compile({ viewPath: path.join(componentPath, '/src/main.ts') }, (err, compiled) => {
+    if (err) {
+      callback(strings.errors.compilationFailed(viewFileName, err))
+    }
     writeFileSync(path.join(publishPath, publishFileName), compiled.template.view);
 
-    return {
+    callback(null, {
       template: {
         type: options.componentPackage.oc.files.template.type,
         hashKey: compiled.template.hash,
         src: publishFileName
       },
       bundle: { hashKey: compiled.bundle.hash }
-    };
-
-  } catch (err) {
-    throw (strings.errors.compilationFailed(viewFileName, err));
-  }
+    });
+  });
 };

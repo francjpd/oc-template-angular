@@ -1,42 +1,32 @@
-"use strict";
-
 const MemoryFS = require("memory-fs");
 const webpack = require("webpack");
-const { promisify } = require('util')
-
 const memoryFs = new MemoryFS();
 
-module.exports = async function compiler(config) {
+module.exports = function compiler(config, callback) {
   const logger = config.logger;
   delete config.logger;
 
   const compiler = webpack(config);
   compiler.outputFileSystem = memoryFs;
 
-  const runPromise = promisify(compiler.run);
+  compiler.run((err, stats) => {
+    if (err) {
+      return callback(err);
+    }
+    const info = stats.toJson();
 
-  return await runPromise()
-    .then(stats => {
-      // handleSoftErrors
-      if (stats.hasErrors()) {
-        softError = info.errors.toString();
-        throw (softError);
-      }
-      const info = stats.toJson();
+    // handleSoftErrors
+    if (stats.hasErrors()) {
+      softError = info.errors.toString();
+      return callback(softError);
+    }
+    
+    const log = stats.toString(config.stats || "errors-only");
 
-      const log = stats.toString(config.stats || "errors-only");
+    if (log) {
+      logger.log(log);
+    }
+    callback(null, memoryFs.data);
+  })
 
-      if (log) {
-        logger.log(log);
-      }
-      return memoryFs.data;
-    })
-    .catch(error => {
-      // handleFatalError
-      if (error) {
-        throw (error);
-      }
-
-
-    });
 };
