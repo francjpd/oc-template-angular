@@ -1,4 +1,4 @@
-import { Context } from 'oc-template-angular-compiler/lib/utils/oc-context.interface';
+import { Context } from 'oc-angular/src/oc-context.interface';
 import { AdditionalData } from './additional-data.interface';
 
 export function data(context: Context, callback: (error: any, data: any) => void) {

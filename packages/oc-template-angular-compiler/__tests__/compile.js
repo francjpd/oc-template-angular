@@ -38,8 +38,7 @@ describe.each([
 
     execute(scenario, err => {
       expect(err).toBeNull();
-      done();
-      fs.removeSync(publishPath);
+      fs.remove(scenario.publishPath, done);
     });
   })
 
@@ -63,8 +62,7 @@ describe.each([
 
     execute(scenario, err => {
       expect(err).toBeNull();
-      done();
-      fs.removeSync(publishPath);
+      fs.remove(scenario.publishPath, done);
     });
   });
 
@@ -88,8 +86,7 @@ describe.each([
 
     execute(scenario, err => {
       expect(err).toBeNull();
-      done();
-      fs.removeSync(publishPath);
+      fs.remove(scenario.publishPath, done);
     });
   })
 });
@@ -134,51 +131,51 @@ const execute = (options, cb) => {
   });
 };
 
-// test("When server compilation fails should return an error", done => {
-//   const publishPath = path.join(
-//     componentPath("angular-component"),
-//     "_compile-tests-package5"
-//   );
-//   const options = {
-//     componentPackage: (function () {
-//       const manifest = componentPackage("angular-component");
-//       manifest.oc.files.data = "not-found.js";
-//       return manifest;
-//     })(),
-//     ocPackage: {
-//       version: "1.0.0"
-//     },
-//     componentPath: componentPath("angular-component"),
-//     publishPath
-//   };
+test("When server compilation fails should return an error", done => {
+  const publishPath = path.join(
+    componentPath("angular-component"),
+    "_compile-tests-package5"
+  );
+  const options = {
+    componentPackage: (function () {
+      const manifest = componentPackage("angular-component");
+      manifest.oc.files.data = "not-found.js";
+      return manifest;
+    })(),
+    ocPackage: {
+      version: "1.0.0"
+    },
+    componentPath: componentPath("angular-component"),
+    publishPath
+  };
 
-//   execute(options, err => {
-//     expect(err).toContain("Module not found");
-//     fs.remove(publishPath, done);
-//   });
-// });
+  execute(options, err => {
+    expect(err).toContain("Module not found");
+    fs.remove(publishPath, done);
+  });
+});
 
-// test("When files writing fails should return an error", done => {
-//   const publishPath = path.join(
-//     componentPath("angular-component"),
-//     "_compile-tests-package6"
-//   );
-//   const spy = jest
-//     .spyOn(fs, "ensureDir")
-//     .mockImplementation(jest.fn((a, cb) => cb("sorry I failed")));
+test("When files writing fails should return an error", done => {
+  const publishPath = path.join(
+    componentPath("angular-component"),
+    "_compile-tests-package6"
+  );
+  const spy = jest
+    .spyOn(fs, "ensureDir")
+    .mockImplementation(jest.fn((a, cb) => cb("sorry I failed")));
 
-//   const options = {
-//     componentPackage: componentPackage("angular-component"),
-//     ocPackage: {
-//       version: "1.0.0"
-//     },
-//     componentPath: componentPath("angular-component"),
-//     publishPath
-//   };
+  const options = {
+    componentPackage: componentPackage("angular-component"),
+    ocPackage: {
+      version: "1.0.0"
+    },
+    componentPath: componentPath("angular-component"),
+    publishPath
+  };
 
-//   execute(options, err => {
-//     expect(err).toMatchSnapshot();
-//     spy.mockRestore();
-//     fs.remove(publishPath, done);
-//   });
-// });
+  execute(options, err => {
+    expect(err).toMatchSnapshot();
+    spy.mockRestore();
+    fs.remove(publishPath, done);
+  });
+});
