@@ -20,11 +20,10 @@ module.exports = (options, callback) => {
     tryGetCached("angularComponent", key, getJsFromUrl, (err, CachedApp) => {
       if (err) return callback(err);
       try {
-        console.log("render!");
-        platformBrowserDynamic().bootstrapModule(CachedApp);
+        // platformBrowserDynamic().bootstrapModule(CachedApp);
         const html = options.template(
           Object.assign({}, options.model, {
-            __html: '<p>render!</p>'
+            __html: CachedApp
           })
         );
         return callback(null, html);

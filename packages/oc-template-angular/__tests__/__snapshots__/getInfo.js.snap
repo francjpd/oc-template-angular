@@ -12,16 +12,11 @@ Object {
       "url": "https://unpkg.com/es6-object-assign@1.1.0/dist/object-assign-auto.min.js",
     },
     Object {
-      "global": "React",
-      "name": "react",
-      "url": "https://unpkg.com/react@16.8.0/umd/react.production.min.js",
-    },
-    Object {
-      "global": "ReactDOM",
-      "name": "react-dom",
-      "url": "https://unpkg.com/react-dom@16.8.0/umd/react-dom.production.min.js",
+      "global": "Zone",
+      "name": "zone.js",
+      "url": "https://unpkg.com/zone.js@0.10.2/dist/zone.js",
     },
   ],
-  "type": "oc-template-typescript-react",
+  "type": "oc-template-angular",
 }
 `;
