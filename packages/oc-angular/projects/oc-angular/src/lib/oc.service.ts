@@ -17,12 +17,25 @@ export class OcService {
   private staticPath: string;
 
   setBasicData(value: any) {
-    this.params = value._params;
-    this.componentVersion = value._componentVersion;
-    this.componentName = value._componentName;
-    this.baseUrl = value._baseUrl;
-    this.staticPath = value._staticPath;
+    if (value._params) {
+      this.params = value._params;
+    }
 
+    if (value._componentVersion) {
+      this.componentVersion = value._componentVersion;
+    }
+
+    if (value._componentName) {
+      this.componentName = value._componentName;
+    }
+
+    if (value._baseUrl) {
+      this.baseUrl = value._baseUrl;
+    }
+
+    if (value._staticPath) {
+      this.staticPath = value._staticPath;
+    }
   }
 
   getData(parameters: any, cb: (error: any, parameters?: any, props?: any) => void) {
