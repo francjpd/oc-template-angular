@@ -1,6 +1,6 @@
-const { outputFileSync, writeFileSync, existsSync } = require('fs-extra');
+const { outputFileSync, writeFileSync } = require('fs-extra');
+const { readdirSync, renameSync, readFileSync } = require('fs');
 const hashBuilder = require('oc-hash-builder');
-const MemoryFS = require('memory-fs');
 const ocViewWrapper = require('oc-view-wrapper');
 const path = require('path');
 const angularComponentWrapper = require('oc-angular-component-wrapper');
@@ -12,9 +12,10 @@ const ocRootModuleTemplate = require('./compile-view/oc-ng-entities/oc-root/oc-r
 const ocMainTemplate = require('./compile-view/oc-ng-entities/oc-main/oc-main.template');
 // const ocParamsServiceTemplate = require('./oc-params-service/oc-params-service.service.template');
 const ocFactory = require('./utils/oc-factory');
-
-const { compiler, configurator: { client: webpackConfigurator } } = require('./to-abstract-base-template-utils/oc-webpack');
 const viewTemplate = require('./viewTemplate');
+
+const TEMPORAL_FOLDER = 'temp';
+const angularComponentFilename = 'angular-component.js';
 
 
 /**
@@ -23,7 +24,7 @@ const viewTemplate = require('./viewTemplate');
  */
 function copyOcNgEntities(options) {
   const { componentPath, componentPackage, componentPackage: { name } } = options;
-  const ocPath = path.join(componentPath, "src", "app", "oc");
+  const ocPath = path.join(componentPath, 'src', 'app', 'oc');
 
   let viewPath = path.join(componentPath, componentPackage.oc.files.template.src);
   if (process.platform === 'win32') {
@@ -53,69 +54,62 @@ function copyOcNgEntities(options) {
 }
 
 /**
+ * Search for the 'main' file (the js from the Ng compilation) within a list of files.
+ */
+const findByPrecedenceOrder = (files) => files.find((fileName) => {
+  if (new RegExp(/main\.js$/).test(fileName)) {
+    return true
+  }
+  if (new RegExp(/main-es2015\.js$/).test(fileName)) {
+    return true
+  }
+  if (new RegExp(/main.es5\.js$/).test(fileName)) {
+    return true
+  }
+  return fileName.includes('main');
+});
+
+/**
  * Calls the ng CLI to compile the ng app.
  */
-function compileNg(options) {
-  const { publishPath, componentPath } = options;
-  const tempPath = path.join(publishPath, 'temp');
+function compileNg({ publishPath, componentPath }) {
+  const outputTempPath = path.join(publishPath, TEMPORAL_FOLDER);
 
-  execSync(`ng build --output-path=${tempPath} --main=src/app/oc/main.ts --crossOrigin=none --prod=true --baseHref=${componentPath} --output-hashing none`);
+  execSync(`ng build --output-path=${outputTempPath} --main=src/app/oc/main.ts --crossOrigin=none --prod=true --baseHref=${componentPath} --output-hashing none`);
 
-  if (!existsSync(path.join(tempPath, 'main-es2015.js'))) {
-    throw 'Angular compilation failed';
-  }
+  const files = readdirSync(path.join(outputTempPath));
+  const mainFile = findByPrecedenceOrder(files);
+
+  console.log(mainFile);
+
+  renameSync(
+    path.join(outputTempPath, mainFile),
+    path.join(outputTempPath, angularComponentFilename)
+  );
 };
 
 /**
- * Cleans the folder created by the `copyOcNgEntities` function.
+ * Cleans the folder created by the execution of the `copyOcNgEntities` function.
  */
 const cleanOcNgEntities = ({ componentPath }) => rimraf.sync(path.join(componentPath, 'src', 'app', 'oc'));
-
-/**
- * Compiles the ng wrapper (template.js) using the previously created build as a entry point.
- */
-function compileNgWrapper(options, callback) {
-  const { publishPath, production, publishFileName = 'template.js', componentPackage } = options;
-  const { getInfo } = require('../index');
-  const externals = getInfo().externals;
-  const entry = path.join(publishPath, 'temp', 'main-es2015.js');
-
-  const config = webpackConfigurator({
-    entry,
-    externals: externals.reduce((externals, dep) => {
-      externals[dep.name] = dep.global;
-      return externals;
-    }, {}),
-    publishFileName,
-    production,
-    buildIncludes: componentPackage.oc.files.template.buildIncludes || []
-  });
-  compiler(config, compilerHandler(options, config, callback));
-}
 
 /**
  * Function that returns a callback that will build the template based
  * on the config created by the `compileNgWrapper` function
  * 
- * @param {*} options 
- * @param {*} config 
- * @param {*} parentCallback 
  */
-const compilerHandler = (options, config, parentCallback) => (err, data) => {
+const compileNgWrapper = (options) => {
   const { publishPath, production, componentPackage: { name }, } = options;
-  const { externals, output: { filename } } = config;
+  const { getInfo } = require('../index');
+  const outputTempPath = path.join(publishPath, TEMPORAL_FOLDER);
+  const externals = getInfo().externals;
 
-  if (err) {
-    return parentCallback(err);
-  }
-
-  const memoryFs = new MemoryFS(data);
-  const bundle = memoryFs.readFileSync(`/build/${filename}`, 'UTF8');
+  const bundle = readFileSync(path.join(outputTempPath, angularComponentFilename), 'UTF8');
   const bundleHash = hashBuilder.fromString(bundle);
-  const bundleName = 'angular-component';
-  const bundlePath = path.join(publishPath, `${bundleName}.js`);
+  const bundleName = angularComponentFilename.split('.js')[0];
   const wrappedBundle = angularComponentWrapper(bundleHash, bundle);
-  outputFileSync(bundlePath, wrappedBundle);
+
+  outputFileSync(path.join(publishPath, angularComponentFilename), wrappedBundle);
 
   const templateString = viewTemplate({
     angularRoot: `${name}`,
@@ -128,23 +122,22 @@ const compilerHandler = (options, config, parentCallback) => (err, data) => {
   const hash = hashBuilder.fromString(templateStringCompressed);
   const view = ocViewWrapper(hash, templateStringCompressed);
 
-  return parentCallback(null, {
-    template: { view, hash },
+  return {
+    template: {
+      view,
+      hash
+    },
     bundle: { hash: bundleHash }
-  })
+  }
 };
 
 
-const compilerWrapperHandler = (options, parentCallback) => (err, compiled) => {
+const bundleAll = (options, compiled, callback) => {
   const { publishPath, publishFileName = 'template.js', componentPackage } = options;
-
-  if (err) {
-    parentCallback(strings.errors.compilationFailed(componentPackage.oc.files.template.src, err))
-  }
 
   writeFileSync(path.join(publishPath, publishFileName), compiled.template.view);
 
-  parentCallback(null, {
+  callback(null, {
     template: {
       type: componentPackage.oc.files.template.type,
       hashKey: compiled.template.hash,
@@ -154,15 +147,14 @@ const compilerWrapperHandler = (options, parentCallback) => (err, compiled) => {
   });
 };
 
-/**
- * Function that will compile the Ng app, the wrapper & return em within the callback.
- */
 module.exports = (options, callback) => {
   try {
     [copyOcNgEntities, compileNg, cleanOcNgEntities].forEach(fn => fn(options));
   } catch (err) {
-    return callback(err);
+    return callback('Angular compilation failed', err);
   }
-  compileNgWrapper(options, compilerWrapperHandler(options, callback));
+  const compiled = compileNgWrapper(options);
+
+  bundleAll(options, compiled, callback);
 };
 
