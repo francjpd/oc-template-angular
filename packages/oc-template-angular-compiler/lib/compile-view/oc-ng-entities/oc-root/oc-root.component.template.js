@@ -1,24 +1,23 @@
-const pascalcase = require('pascalcase');
-
-module.exports = (name, path) => ` 
+const Handlebars = require("handlebars");
+module.exports = (() => Handlebars.compile(` 
 import { Component, OnInit, NgZone } from '@angular/core';
-import { Router, Event, NavigationEnd, NavigationStart, RoutesRecognized} from '@angular/router';
+import { Router, Event, NavigationEnd, NavigationStart, RoutesRecognized } from '@angular/router';
 import { OcService } from 'oc-angular';
 import { filter, pairwise, map, tap } from 'rxjs/operators';
 
 @Component({
-  selector: 'oc-root-${name}',
-  template: '<${name}></${name}>'
+  selector: 'oc-root-{{name}}',
+  template: '<{{name}}></{{name}}>'
 })
 export class OcRootComponent implements OnInit {
-  title = 'oc-provider-${name}';
+  title = 'oc-provider-{{name}}';
   previousState: string;
   params: any;
 
   constructor(private ocService: OcService, private _ngZone: NgZone, private router: Router) { }
 
   ngOnInit() {
-    const rootComp = document.getElementsByTagName('oc-root-${name}')[0];
+    const rootComp = document.getElementsByTagName('oc-root-{{name}}')[0];
     this.router.events
     .pipe(
       filter((evt: any) => evt instanceof RoutesRecognized),
@@ -36,7 +35,7 @@ export class OcRootComponent implements OnInit {
         }
       });
 
-    this.ocService.oc.events.on('oc-angular-init:${name}', (event: any, props: any) => {
+    this.ocService.oc.events.on('oc-angular-init:{{name}}', (event: any, props: any) => {
       this._ngZone.run(() => {
         if (props != null) {
           this.ocService.oc.events.fire('oc:componentDidMount', props)
@@ -45,7 +44,7 @@ export class OcRootComponent implements OnInit {
           this.params = props.params;
         }
       });
-      this.ocService.oc.events.fire('oc-angular-created:${name}');
+      this.ocService.oc.events.fire('oc-angular-created:{{name}}');
     });
   }
 
@@ -58,4 +57,4 @@ export class OcRootComponent implements OnInit {
       this.params = props.params;
     }
   }
-}`;
+}`))();

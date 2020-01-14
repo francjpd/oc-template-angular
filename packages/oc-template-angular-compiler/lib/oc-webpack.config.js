@@ -1,10 +1,16 @@
 const webpackMerge = require('webpack-merge');
-
+const MinifyPlugin = require("babel-minify-webpack-plugin");
 const ocAngularWebpack = (config, options) => {
     const ocConfig = {
-        output: {
-            libraryTarget: 'umd',
+        optimization: {
+            // https://webpack.js.org/configuration/optimization/
+            // Override production mode optimization for minification
+            // As it currently breakes the build, still rely on babel-minify-webpack-plugin instead
+            minimize: false
         },
+        plugins: [
+            new MinifyPlugin({}, { comments: false })
+        ],
         externals: {
             'zone.js': 'Zone',
         }

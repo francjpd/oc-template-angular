@@ -1,13 +1,9 @@
-const pascalcase = require('pascalcase');
-
-module.exports = (name, path) => {
-  const namePascalCase = pascalcase(name);
-  return `
-import { NgModule } from '@angular/core';
+const Handlebars = require("handlebars");
+module.exports = (() => Handlebars.compile(`import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { OcRootComponent } from './oc-root.component';
-import { ${namePascalCase}Module } from 'src/app/${name}.module';
+import { {{ namePascalCase }}Module } from 'src/app/{{name}}.module';
 import { OcModule } from 'oc-angular';
 
 @NgModule({
@@ -15,13 +11,13 @@ import { OcModule } from 'oc-angular';
     BrowserModule,
     CommonModule,
     OcModule,
-    ${namePascalCase}Module
+    {{ namePascalCase }}Module
   ],
   declarations: [
-    OcRootComponent
-  ],
+  OcRootComponent
+],
   exports: [OcRootComponent],
   bootstrap: [OcRootComponent]
 })
 export class OcRootModule { }
-`};
+`))();
