@@ -1,6 +1,6 @@
 
-module.exports = (name, path) => {
-    return `
+const Handlebars = require("handlebars");
+module.exports = (() => Handlebars.compile(`
     import { enableProdMode, NgZone, NgModuleRef } from '@angular/core';
     import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
     import { ɵAnimationEngine } from '@angular/animations/browser';
@@ -51,5 +51,4 @@ module.exports = (name, path) => {
     );
     
     export default angularInstance;
-    `
-};
+    `))();
