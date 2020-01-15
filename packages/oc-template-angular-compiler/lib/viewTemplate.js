@@ -24,12 +24,11 @@ const viewTemplate = ({
             oc.require(
             ["oc", "angularComponents", "${bundleHash}"],
             "\${staticPath}${bundleName}.js",
-            async function(angularComponent){
-              await angularComponent.getInstance();
-              oc.events.fire("oc-angular-init:${angularRoot}", \${props});
-              oc.events.on('oc-params-created:${angularRoot}', () => {
-                oc.events.fire("oc-angular-init:${angularRoot}", \${props});
+            function(angularComponent){
+              oc.events.on('oc-${angularRoot}:ngOnInit', (event, { set }) => {
+                set(\${props});
               });
+              angularComponent.getInstance();
             }
           );
         });
