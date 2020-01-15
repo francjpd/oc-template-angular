@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 
 import { OcService } from './oc.service';
 import { OcPatchRouteComponent } from './oc-patch-route/oc-patch-route.component';
+import { OcPatchRoutingModule } from './oc-patch-route/oc-patch-routing.module';
 
 @NgModule({
   declarations: [
@@ -9,7 +10,7 @@ import { OcPatchRouteComponent } from './oc-patch-route/oc-patch-route.component
   ],
   providers: [OcService],
   imports: [
-   //  OcPatchRoutingModule -- Se deja fuera para que la gente pueda jugar con el useHash o no.
+    OcPatchRoutingModule
   ]
 })
 export class OcModule { }
