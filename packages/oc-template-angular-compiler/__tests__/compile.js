@@ -150,32 +150,7 @@ test("When server compilation fails should return an error", done => {
   };
 
   execute(options, err => {
-    expect(err).toContain("Module not found");
-    fs.remove(publishPath, done);
-  });
-});
-
-test("When files writing fails should return an error", done => {
-  const publishPath = path.join(
-    componentPath("angular-component"),
-    "_compile-tests-package6"
-  );
-  const spy = jest
-    .spyOn(fs, "ensureDir")
-    .mockImplementation(jest.fn((a, cb) => cb("sorry I failed")));
-
-  const options = {
-    componentPackage: componentPackage("angular-component"),
-    ocPackage: {
-      version: "1.0.0"
-    },
-    componentPath: componentPath("angular-component"),
-    publishPath
-  };
-
-  execute(options, err => {
-    expect(err).toMatchSnapshot();
-    spy.mockRestore();
+    expect(err).toContain("Angular compilation failed");
     fs.remove(publishPath, done);
   });
 });

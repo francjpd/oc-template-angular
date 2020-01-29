@@ -2,33 +2,35 @@ const { outputFileSync } = require('fs-extra');
 const { readdirSync, readFileSync, writeFileSync } = require('fs');
 const hashBuilder = require('oc-hash-builder');
 const ocViewWrapper = require('oc-view-wrapper');
-const path = require('path');
+const { join } = require('path');
 const angularComponentWrapper = require('oc-angular-component-wrapper');
-const { execSync } = require('child_process');
+const { execSync, spawn } = require('child_process');
 const rimraf = require('rimraf');
 const ocRootComponentTemplate = require('./compile-view/oc-ng-entities/oc-root/oc-root.component.template');
 const ocRootModuleTemplate = require('./compile-view/oc-ng-entities/oc-root/oc-root.module.template');
 const ocMainTemplate = require('./compile-view/oc-ng-entities/oc-main/oc-main.template');
-// const ocParamsServiceTemplate = require('./oc-params-service/oc-params-service.service.template');
 const pascalcase = require('pascalcase');
 const viewTemplate = require('./viewTemplate');
 
 const TEMPORAL_FOLDER = 'temp';
 const angularComponentFilename = 'angular-component.js';
+const callbacks = [];
+let isWatching = false;
+let bundleHash;
 
 
 /**
- * Copy the needed entities (components, modules, etc.) to the <ng-app-path>/src/app/oc path.
+ * Copy the needed entities (components, modules, etc.) to the <ng-app-path>/src/app/oc 
  * These entities are created dinamically based on the components's name.
  */
 function copyOcNgEntities({ componentPath, componentPackage: { name } }) {
-  const ocPath = path.join(componentPath, 'src', 'app', 'oc');
+  const ocPath = join(componentPath, 'src', 'app', 'oc');
 
   [
     ['oc-root.component.ts', ocRootComponentTemplate({ name })],
     ['oc-root.module.ts', ocRootModuleTemplate({ name, namePascalCase: pascalcase(name) })],
     ['main.ts', ocMainTemplate()]
-  ].forEach(([fileName, content]) => outputFileSync(path.join(ocPath, fileName), content));
+  ].forEach(([fileName, content]) => outputFileSync(join(ocPath, fileName), content));
 }
 
 /**
@@ -48,29 +50,63 @@ const findByPrecedenceOrder = (files) => files.find((fileName) => {
 });
 
 /**
- * Calls the ng CLI to compile the ng app; next, wraps the compiled ng app so OC can understand it; lastly
- * creates a hash so it can be used by the template.js to have a reference of it.
+ *  gets the compiled ng app, wraps it so OC can understand the component
  */
-function compileNg({ publishPath, componentPath }) {
-  const outputTempPath = path.join(publishPath, TEMPORAL_FOLDER);
-
-  execSync(`ng build --output-path=${outputTempPath} --main=src/app/oc/main.ts --crossOrigin=none --prod=true --baseHref=${componentPath} --output-hashing none`);
-
-  const files = readdirSync(path.join(outputTempPath));
+const wrapNgApp = (publishPath, outputTempPath) => {
+  const files = readdirSync(join(outputTempPath));
   const mainFile = findByPrecedenceOrder(files);
-  const bundle = readFileSync(path.join(outputTempPath, mainFile), 'UTF8');
+  const bundle = readFileSync(join(outputTempPath, mainFile), 'UTF8');
   const bundleHash = hashBuilder.fromString(bundle);
   const wrappedBundle = angularComponentWrapper(bundleHash, bundle);
-
-  outputFileSync(path.join(publishPath, angularComponentFilename), wrappedBundle);
+  outputFileSync(join(publishPath, angularComponentFilename), wrappedBundle);
 
   return bundleHash;
+}
+
+/**
+ * Calls the ng CLI to compile the ng app; next, wraps the compiled ng app so OC can understand it; lastly
+ * creates a hash so it can be called by the template.js to have a reference of it.
+ */
+function compileNg({ publishPath }) {
+  const outputTempPath = join(publishPath, TEMPORAL_FOLDER);
+  execSync(`ng build --output-path=${outputTempPath} --main=src/app/oc/main.ts --crossOrigin=none --prod=true --output-hashing none`,
+    {
+      env: process.env
+    });
+  return wrapNgApp(publishPath, outputTempPath);
 };
+
+
+/**
+ * Calls the ng CLI in watch mode.
+ */
+function watch(options) {
+  const { publishPath } = options;
+  const outputTempPath = join(publishPath, TEMPORAL_FOLDER);
+  const cmd = `ng build --aot=true  --buildOptimizer=false --sourceMap=false --optimization=false --output-path=${outputTempPath} --watch=true --main=src/app/oc/main.ts --crossOrigin=none --output-hashing none`;
+  const spawnedProcess = spawn(cmd, [''], { shell: true });
+
+  spawnedProcess.stdout.on('data', (data) => {
+    if (`${data}`.match(/chunk.*main/)) {
+      bundleHash = wrapNgApp(publishPath, outputTempPath);
+      const callback = callbacks.shift();
+      if (callback) {
+        callback(null, compileNgWrapper(options, bundleHash));
+      }
+    }
+  });
+  spawnedProcess.stderr.on('data', (data) => {
+    if (!isWatching) {
+      throw data;
+    }
+    console.log(data);
+  });
+}
 
 /**
  * Cleans the folder created by the execution of the `copyOcNgEntities` function.
  */
-const cleanOcNgEntities = ({ componentPath }) => rimraf.sync(path.join(componentPath, 'src', 'app', 'oc'));
+const cleanOcNgEntities = ({ componentPath }) => rimraf.sync(join(componentPath, 'src', 'app', 'oc'));
 
 /**
  * wraps the NG app so OC can understand it, creates the template.js file
@@ -99,8 +135,7 @@ const compileNgWrapper = (options, bundleHash) => {
   const templateHash = hashBuilder.fromString(templateStringCompressed);
   const view = ocViewWrapper(templateHash, templateStringCompressed);
 
-
-  writeFileSync(path.join(publishPath, publishFileName), view);
+  writeFileSync(join(publishPath, publishFileName), view);
 
   return {
     template: {
@@ -122,14 +157,29 @@ const compileNgWrapper = (options, bundleHash) => {
  * reference from the angular-component.js file and external libraries.
  * 6. calls the callback with the template & bundle if everything its ok.
  */
-module.exports = (options, callback) => {
+module.exports = (options, cb) => {
+  process.chdir(options.componentPath);
+  if (options.production) {
+    process.env.PRODUCTION = true;
+  }
+  callbacks.push(cb);
   try {
     copyOcNgEntities(options);
+    if (isWatchMode(options)) {
+      if (isWatching) {
+        return;
+      }
+      watch(options);
+      isWatching = true;
+      return;
+    }
+
     const bundleHash = compileNg(options);
     cleanOcNgEntities(options);
-    return callback(null, compileNgWrapper(options, bundleHash));
+    return cb(null, compileNgWrapper(options, bundleHash));
   } catch (err) {
-    return callback(`Angular compilation failed': ${err}`);
+    return cb(`Angular compilation failed': ${err}`);
   }
 };
 
+const isWatchMode = ({ verbose, minify, production }) => !verbose && !minify && !production;
