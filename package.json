@@ -13,7 +13,7 @@
     "clean": "lerna clean",
     "dev": "jest --watch",
     "updated": "lerna updated",
-    "test": "jest",
+    "test": "jest --coverage=false",
     "publish": "lerna publish --exact"
   },
   "lint-staged": {

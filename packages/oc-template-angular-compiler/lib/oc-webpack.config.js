@@ -1,21 +1,23 @@
 const webpackMerge = require('webpack-merge');
 const MinifyPlugin = require("babel-minify-webpack-plugin");
-const ocAngularWebpack = (config, options) => {
+const ocAngularWebpack = (config) => {
     const ocConfig = {
+        externals: {
+            'zone.js': 'Zone',
+        },
         optimization: {
             // https://webpack.js.org/configuration/optimization/
             // Override production mode optimization for minification
             // As it currently breakes the build, still rely on babel-minify-webpack-plugin instead
-            minimize: false
-        },
-        plugins: [
-            new MinifyPlugin({}, { comments: false })
-        ],
-        externals: {
-            'zone.js': 'Zone',
+            minimize: process.env.PRODUCTION ? false : true
         }
     }
+    if (process.env.PRODUCTION) {
 
+        ocConfig.plugins = [
+            new MinifyPlugin({}, { comments: false })
+        ];
+    }
     const mergedConfig = webpackMerge.smart(config, ocConfig)
 
     removePluginByName(mergedConfig.plugins, 'IndexHtmlWebpackPlugin');
