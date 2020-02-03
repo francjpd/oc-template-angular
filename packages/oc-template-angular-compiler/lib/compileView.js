@@ -67,11 +67,12 @@ const wrapNgApp = (publishPath, outputTempPath) => {
  * Calls the ng CLI to compile the ng app; next, wraps the compiled ng app so OC can understand it; lastly
  * creates a hash so it can be called by the template.js to have a reference of it.
  */
-function compileNg({ publishPath }) {
+function compileNg({ publishPath, componentPath }) {
   const outputTempPath = join(publishPath, TEMPORAL_FOLDER);
   execSync(`ng build --output-path=${outputTempPath} --main=src/app/oc/main.ts --crossOrigin=none --prod=true --output-hashing none`,
     {
-      env: process.env
+      env: process.env,
+      cwd: componentPath
     });
   return wrapNgApp(publishPath, outputTempPath);
 };
@@ -81,10 +82,10 @@ function compileNg({ publishPath }) {
  * Calls the ng CLI in watch mode.
  */
 function watch(options) {
-  const { publishPath } = options;
+  const { publishPath, componentPath } = options;
   const outputTempPath = join(publishPath, TEMPORAL_FOLDER);
   const cmd = `ng build --aot=true  --buildOptimizer=false --sourceMap=false --optimization=false --output-path=${outputTempPath} --watch=true --main=src/app/oc/main.ts --crossOrigin=none --output-hashing none`;
-  const spawnedProcess = spawn(cmd, [''], { shell: true });
+  const spawnedProcess = spawn(cmd, [''], { shell: true, cwd: componentPath });
 
   spawnedProcess.stdout.on('data', (data) => {
     if (`${data}`.match(/chunk.*main/)) {
@@ -95,11 +96,12 @@ function watch(options) {
       }
     }
   });
+
   spawnedProcess.stderr.on('data', (data) => {
     if (!isWatching) {
       throw data;
     }
-    console.log(data);
+    console.log(`${data}`);
   });
 }
 
@@ -150,7 +152,7 @@ const compileNgWrapper = (options, bundleHash) => {
 /**
  * Does the following:
  * 1. Copy the files: ocRootComponent, ocRootModule and ocMain to the <ng-app-path>/src/app/oc folder 
- * 2. Compiles the NG app.
+ * 2. Compiles the NG app Or sets the Ng cli on watch mode.
  * 3. Wraps the compiled NG app with a JS that OC understands & creates the angular-component.js file.
  * 4. Removes the files and folders created in step 1.
  * 5. Creates a file called template.js that will contain the
@@ -158,7 +160,6 @@ const compileNgWrapper = (options, bundleHash) => {
  * 6. calls the callback with the template & bundle if everything its ok.
  */
 module.exports = (options, cb) => {
-  process.chdir(options.componentPath);
   if (options.production) {
     process.env.PRODUCTION = true;
   }
