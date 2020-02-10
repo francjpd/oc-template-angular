@@ -29,7 +29,7 @@ function copyOcNgEntities({ componentPath, componentPackage: { name } }) {
   [
     ['oc-root.component.ts', ocRootComponentTemplate({ name })],
     ['oc-root.module.ts', ocRootModuleTemplate({ name, namePascalCase: pascalcase(name) })],
-    ['main.ts', ocMainTemplate()]
+    ['main.ts', ocMainTemplate({ name })]
   ].forEach(([fileName, content]) => outputFileSync(join(ocPath, fileName), content));
 }
 
