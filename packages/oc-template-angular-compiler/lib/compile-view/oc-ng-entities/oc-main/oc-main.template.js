@@ -9,15 +9,27 @@ module.exports = (() => Handlebars.compile(`
     
     enableProdMode();
 
-    export const angularComponent = (bootstrapFn, {
+    export const angularComponent = (bootstrapFn: any, {
       AnimationModule,
       Router,
       NgZone
     }: any) => {
       let ngModule: NgModuleRef<OcRootModule>;
-      const getInstance = async () => {
-        ngModule = await bootstrapFn();
-      };
+      const getInstance = (instanceName) => {
+        // Hack to bypass isInAngularZone when there are multiple angular apps running
+        // at the same time.
+        if (NgZone) {
+          NgZone.isInAngularZone = function() {
+            // console.log('angular zone for ', instanceName);
+            return (window as any).Zone.current.get(instanceName) === true;
+          }
+        }
+        return bootstrapFn().then((module) => {
+          if (NgZone) {
+            module.injector.get(NgZone)._inner._properties['{{name}}'] = true;
+          }
+          });
+        };
       const destroy = () => {
           const routerRef = ngModule.injector.get<Router>(Router);
           routerRef.dispose();

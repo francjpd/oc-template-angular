@@ -28,7 +28,7 @@ const viewTemplate = ({
               oc.events.on('oc-${angularRoot}:ngOnInit', (event, { set }) => {
                 set(\${props});
               });
-              angularComponent.getInstance();
+              angularComponent.getInstance('${angularRoot}');
             }
           );
         });
