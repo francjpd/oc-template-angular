@@ -12,7 +12,7 @@ const ocMainTemplate = require('./compile-view/oc-ng-entities/oc-main/oc-main.te
 const pascalcase = require('pascalcase');
 const viewTemplate = require('./viewTemplate');
 
-const TEMPORAL_FOLDER = 'temp';
+const TEMPORAL_FOLDER = '';
 const angularComponentFilename = 'angular-component.js';
 const callbacks = [];
 let isWatching = false;
