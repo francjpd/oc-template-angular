@@ -1,12 +1,16 @@
+![publish clientside](publish-clientside.svg)
+
+![publish serverside](publish-serverside.svg)
+
 Zone - https://github.com/CanopyTax/single-spa-angular/commit/696720f60db5469a2686f0d85200f83c7763f7f9
 
 https://verdaccio.org
 
 
-WIP oc-template-angular
-=================
+# WIP oc-template-angular
+[Access to the ES version of the Readme](./README-ES.md)
 
-react-templates with typescript support & utilties for the [OpenComponents](https://github.com/opentable/oc) template system
+angular-templates for the [OpenComponents](https://github.com/opentable/oc) template system
 
 Based on Nick Balestra's work on [oc-template-react](https://github.com/opencomponents/oc-template-react)
 
