@@ -18,17 +18,55 @@ Basado en el trabajo de Nick Balestra en [oc-template-react](https://github.com/
 
 ## Uso:
 
-La manera de usar el `oc-template-angular` varia del resto de templates (`oc-template-react`, `oc-template-react-typescript`, `oc-template-es5`, etc.), esto se debe a varias razones:
+La manera habitual de crear un template con open components es a través del comando `oc init`. Sin embargo, Angular es un poco mas complejo y la lógica que ejecuta dicho comando es insuficiente. Ademas, pensamos que era mejor prescindir de dicho comando y modificar los proyectos basados en el CLI de Angular, por las siguientes razones:
 
-1. La mayoria de proyectos (Por no decir todos) Angular, se crean a partir del CLI que provee el framework; En otras palabras, los proyectos basados en Angular tienen en común, el fichero angular.json o angular-cli.json y son compilados usando el CLI.
+- Para los proyectos es mas fácil agregar la lógica necesaria para transformar la SPA convencional en microfront que comenzar de cero con este scaffold.
 
-debido a la manera en como funciona Angular durante el proceso de compilación. A diferencia de otros frameworks, 
+- La mayoria de los proyectos Angular son creados a partir del CLI que provee el framework. En otras palabras, los proyectos basados en Angular tienen en común el fichero angular.json/angular-cli.json, una estructura de carpetas similar y son compilados usando el CLI de NG. Introducir otra forma de crear proyectos en el ecosistema Angular no tendría sentido.
+
+Así que, si quieres utilizar el template de angular tendrás que ejecutar manualmente los siguientes pasos:
+
+1. Copia el siguiente fragmento JSON: 
+
+``` json
+  "oc": {
+    "parameters": {
+      "name": {
+        "default": "Joe",
+        "description": "Your name",
+        "example": "Jane Doe",
+        "mandatory": false,
+        "type": "string"
+      },
+      "complexParameter": {
+        "default": "{\"test\":\"works\"}",
+        "description": "complex object example",
+        "example": "{\"test\":\"works\"}",
+        "mandatory": false,
+        "type": "string"
+      }
+    },
+    "files": {
+      "data": "src/app/server.ts",
+      "template": {
+        "src": "template.js",
+        "type": "oc-template-angular"
+      }
+    }
+  }
 
 ```
-$ oc init <your-component-name> oc-template-angular
-$ cd <your-component-name>
-$ npm install
-```
+
+2. Pegalo en el `package.json` de tu proyecto y a continuacion modifica la propiedad `parameters` de acuerdo a tus necesidades. La propiedad files no la debes modificar.
+
+    ### Nota:
+
+    Si has echado un vistazo al fragmento JSON, te daras cuenta que los datos complejos son tambien de tipo `string`, esto se debe a que en las entrañas del template se realiza la transformación de dicho string a objeto. **Importante!**: Desde OC no se recomenda solicitar objetos complejos, siempre datos simples.
+
+3. Instala la dependencia `oc-template-angular-compiler` como devDependencies mediante el siguiente comando: `npm i -D oc-template-angular-compiler`
+
+4. Asegurate de que el componente raiz tiene un selector que lo diferencie del resto; si tu proyecto se llama seguros-mapfred, el valor del selector debería ser seguros-mapfed. 
+
 
 ## Extra info:
 ### package.json requirements
