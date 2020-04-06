@@ -1,8 +1,7 @@
-
 import { Component, OnInit, NgZone } from '@angular/core';
-import { Router, Event, NavigationEnd, NavigationStart, RoutesRecognized } from '@angular/router';
+import { Router, Event, NavigationEnd, RoutesRecognized } from '@angular/router';
 import { OcService } from 'oc-angular';
-import { filter, pairwise, map, tap } from 'rxjs/operators';
+import { filter, pairwise} from 'rxjs/operators';
 
 @Component({
   selector: 'oc-root-angular-component',
@@ -14,15 +13,15 @@ export class OcRootComponent implements OnInit {
   params = {};
   setParams = () => ({
     set: (value) => {
-      this._ngZone.run(() => {
+      this.ngZoneInstance.run(() => {
         this.ocService.setBasicData(value);
         this.ocService.context.next(value);
-        this.params = value
+        this.params = value;
       });
     },
   })
 
-  constructor(private ocService: OcService, private _ngZone: NgZone, private router: Router) { }
+  constructor(private ocService: OcService, private ngZoneInstance: NgZone, private router: Router) { }
 
   ngOnInit() {
     const rootComp = document.getElementsByTagName('oc-root-angular-component')[0];
@@ -31,17 +30,21 @@ export class OcRootComponent implements OnInit {
         filter((evt: any) => evt instanceof RoutesRecognized),
         pairwise()
       ).subscribe((events: RoutesRecognized[]) => {
-        this.previousState = events[0].urlAfterRedirects
+        this.previousState = events[0].urlAfterRedirects;
       });
 
     this.router.events
       .subscribe(
         (event: Event) => {
           if (event instanceof NavigationEnd) {
-            rootComp.dispatchEvent(new HashChangeEvent('hashchange', { bubbles: true, oldURL: this.previousState, newURL: (event as NavigationEnd).urlAfterRedirects }));
+            rootComp.dispatchEvent(new HashChangeEvent('hashchange', {
+              bubbles: true,
+              oldURL: this.previousState,
+              newURL: (event as NavigationEnd).urlAfterRedirects
+            }));
             rootComp.dispatchEvent(new PopStateEvent('popstate', { bubbles: true, state: (event as NavigationEnd).urlAfterRedirects }));
           }
         });
     this.ocService.oc.events.fire('oc-angular-component:ngOnInit', this.setParams());
   }
-} 
+}

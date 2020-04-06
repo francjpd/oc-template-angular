@@ -3,7 +3,7 @@ module.exports = (() => Handlebars.compile(`import { NgModule } from '@angular/c
 import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { OcRootComponent } from './oc-root.component';
-import { {{ namePascalCase }}Module } from 'src/app/{{name}}.module';
+import { {{ namePascalCase }} } from 'src/app/{{name}}';
 import { OcModule } from 'oc-angular';
 
 @NgModule({
@@ -11,7 +11,7 @@ import { OcModule } from 'oc-angular';
     BrowserModule,
     CommonModule,
     OcModule,
-    {{ namePascalCase }}Module
+    {{ namePascalCase }}
   ],
   declarations: [
   OcRootComponent

@@ -20,15 +20,40 @@ let bundleHash;
 
 
 /**
+ * Retrieve the component's & module name from the <path>/src/app folder.
+ */
+const optionsWithRootInfo = options => {
+  const appPath = join(options.componentPath, 'src', 'app');
+
+  const rootFiles = readdirSync(appPath);
+  const rootComponentName = rootFiles.find((file) => file.includes('component.ts'));
+  const rootModuleName = rootFiles.find((file) => file.match(/^(?=.*?\bmodule\b)((?!routing).)*$/)).split('.ts')[0];
+  const rootComponent = readFileSync(join(appPath, rootComponentName), 'UTF8');
+  const rootComponentSelector = rootComponent.match(/selector: ['"][a-z-0-9]*'/)[0].split("'")[1];
+  
+  return {
+    ...options,
+    rootModuleName,
+    rootComponentSelector
+  }
+}
+
+/**
  * Copy the needed entities (components, modules, etc.) to the <ng-app-path>/src/app/oc 
  * These entities are created dinamically based on the components's name.
  */
-function copyOcNgEntities({ componentPath, componentPackage: { name } }) {
-  const ocPath = join(componentPath, 'src', 'app', 'oc');
+function copyOcNgEntities(
+  {
+    componentPath,
+    componentPackage: { name },
+    rootModuleName,
+    rootComponentSelector }
+) {
 
+  const ocPath = join(componentPath, 'src', 'app', 'oc');
   [
-    ['oc-root.component.ts', ocRootComponentTemplate({ name })],
-    ['oc-root.module.ts', ocRootModuleTemplate({ name, namePascalCase: pascalcase(name) })],
+    ['oc-root.component.ts', ocRootComponentTemplate({ name: rootComponentSelector })],
+    ['oc-root.module.ts', ocRootModuleTemplate({ name: rootModuleName, namePascalCase: pascalcase(rootModuleName) })],
     ['main.ts', ocMainTemplate({ name })]
   ].forEach(([fileName, content]) => outputFileSync(join(ocPath, fileName), content));
 }
@@ -68,7 +93,8 @@ const wrapNgApp = (publishPath, outputTempPath) => {
  * creates a hash so it can be called by the template.js to have a reference of it.
  */
 function compileNg({ publishPath, componentPath }) {
-  const outputTempPath = join(publishPath, TEMPORAL_FOLDER);
+  const outputTempPath = join
+    (publishPath, TEMPORAL_FOLDER);
   execSync(`ng build --output-path=${outputTempPath} --main=src/app/oc/main.ts --crossOrigin=none --prod=true --output-hashing none`,
     {
       env: process.env,
@@ -121,13 +147,14 @@ const compileNgWrapper = (options, bundleHash) => {
     publishFileName = 'template.js',
     componentPackage,
     production, componentPackage: { name },
+    rootComponentSelector
   } = options;
 
   const { getInfo } = require('../index');
   const externals = getInfo().externals;
   const bundleName = angularComponentFilename.split('.js')[0];
   const templateString = viewTemplate({
-    angularRoot: `${name}`,
+    angularRoot: `${rootComponentSelector}`,
     externals,
     bundleHash,
     bundleName
@@ -164,20 +191,21 @@ module.exports = (options, cb) => {
     process.env.PRODUCTION = true;
   }
   callbacks.push(cb);
+  const modifiedOptions = optionsWithRootInfo(options);
   try {
-    copyOcNgEntities(options);
-    if (isWatchMode(options)) {
+    copyOcNgEntities(modifiedOptions);
+    if (isWatchMode(modifiedOptions)) {
       if (isWatching) {
         return;
       }
-      watch(options);
+      watch(modifiedOptions);
       isWatching = true;
       return;
     }
 
-    const bundleHash = compileNg(options);
-    cleanOcNgEntities(options);
-    return cb(null, compileNgWrapper(options, bundleHash));
+    const bundleHash = compileNg(modifiedOptions);
+    cleanOcNgEntities(modifiedOptions);
+    return cb(null, compileNgWrapper(modifiedOptions, bundleHash));
   } catch (err) {
     return cb(`Angular compilation failed': ${err}`);
   }
