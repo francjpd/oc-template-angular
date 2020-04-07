@@ -68,9 +68,8 @@ Así que, si quieres utilizar el template de angular tendrás que ejecutar manua
 
 4. Modifica el fichero angular.json con los siguientes valores:
 
-    - **prefix**: `<nombre-de-proyecto>`
     - **architect/build/builder**: @angular-builders/custom-webpack:browser
-    - **architect/build/customWebpackConfig/path**: node_modules/oc-template-angular-compiler/lib/oc-webpack.config.js
+    - **architect/build/options/customWebpackConfig/path**: node_modules/oc-template-angular-compiler/lib/oc-webpack.config.js
 
 5. Agrega el `OcModule` de la dependencia `oc-angular` al módulo raiz.
 
@@ -92,6 +91,8 @@ Así que, si quieres utilizar el template de angular tendrás que ejecutar manua
     Dicho Router deberia tener un contenido similar a este:
 
     ``` typescript
+    import { OcPatchRouteComponent } from 'oc-angular';
+
     const routes: Routes = [
       { path: '**', component: OcPatchRouteComponent },
     ];
@@ -101,6 +102,11 @@ Así que, si quieres utilizar el template de angular tendrás que ejecutar manua
       exports: [RouterModule],
       providers: [{ provide: APP_BASE_HREF, useValue: '/' }]
     })
+    ```
+
+8. Asegurate de tener el polyfill Zone activado mediante el siguiente comando: 
+    ``` typescript
+    import 'zone.js/dist/zone';  // Included with Angular CLI.
     ```
 
 ### conventions
