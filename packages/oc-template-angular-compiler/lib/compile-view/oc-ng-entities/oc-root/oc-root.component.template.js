@@ -10,10 +10,10 @@ import { filter, pairwise} from 'rxjs/operators';
 })
 export class OcRootComponent implements OnInit {
   title = 'oc-provider-{{name}}';
-  previousState: string;
+  previousState!: string;
   params = {};
   setParams = () => ({
-    set: (value) => {
+    set: (value:any) => {
       this.ngZoneInstance.run(() => {
         this.ocService.setBasicData(value);
         this.ocService.context.next(value);
