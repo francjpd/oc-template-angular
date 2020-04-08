@@ -1,4 +1,5 @@
 # oc-template-angular
+[Access to the ES version of the Readme](./README-ES.md)
 
 
 Angular-templates for the [OpenComponents](https://github.com/opentable/oc) template system.
@@ -10,7 +11,7 @@ Based on Nick Balestra's work at [oc-template-react] (https://github.com/opencom
 
 | Name                                                                      | Descripción
 |---                                                                        | ---
-| [`oc-angular`](/packages/oc-template-angular)                             | Components, Modules and Services used by `oc-template-angular-compiler` during the compilation phase of an Angular component.
+| [`oc-angular`](/packages/oc-angular)                             | Components, Modules and Services used by `oc-template-angular-compiler` during the compilation phase of an Angular component.
 | [`oc-angular-component-wrapper`](/packages/oc-angular-component-wrapper)  | In charge of wrapping the Angular compilation.
 | [`oc-template-angular`](/packages/oc-template-angular)                    | Pending
 | [`oc-template-angular-compiler`](/packages/oc-template-angular-compiler)  | Responsible for Compiling the component.
@@ -60,9 +61,9 @@ The usual way to create a microfront with open components is through the `oc ini
 
     ### Note:
 
-     If you have taken a look at the JSON fragment, you will notice that complex data is also of type `string`, this is due to the transformation of said `string` to object within the template. **Important!**: OC does not recommended to request complex objects, always simple data.
+     If you have taken a look at the JSON fragment, you will notice that complex data is also of type `string`, this is due to the transformation of said `string` to object within the template. **Important!**: OC does not recommended to request complex objects, always simple data.
 
-3. Install the `oc-template-template-angular-compiler` and `@angular-builders/custom-webpack` dependencies as devDependencies using the following command: `npm i -D oc-template-angular-compiler @angular-builders/custom-webpack@8.4.1`
+3. Install the `oc-template-angular-compiler` and `@angular-builders/custom-webpack` dependencies as devDependencies using the following command: `npm i -D oc-template-angular-compiler @angular-builders/custom-webpack@8.4.1`
 
 4. Modify the angular.json file with the following values:
 

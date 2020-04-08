@@ -1,27 +1,39 @@
-# OcAngular
+# OcAngular 
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 8.3.14.
+[Access to the ES version of the Readme](./README-ES.md)
 
-## Development server
+Entities required by Angular to make both the communication and compatibility with OC possible.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+## Modules
 
-## Code scaffolding
+### OcModule
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+Module responsible for exporting the `OcPatchRouteComponent` and the service` OcService`.
 
-## Build
+### OcService
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+Service in charge of:
 
-## Running unit tests
+- Expose the OC instance.
+- Offer a series of basic methods that the `OcRootComponent` will use when initializing the microfront.
+- Save the data through a ** BehaviorSubject ** the arguments that were previously defined in the `package.json` of the microservice, in this way, the microfront can subscribe to it and carry out any logic it desires .
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+## Components:
 
-## Running end-to-end tests
+### OcPatchRouteComponent
+Due to the way the Angular Router works, it is necessary to create an empty component with the path `**`, as the last element of routes, for example:
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
+``` ts
+// Microfront my-app-based-on-angular
+import { OcPatchRouteComponent } from 'oc-angular';
 
-## Further help
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+const routes: Routes = [
+    { path: 'cards', component: CardViewComponent },
+    { path: 'mortgage', component: MortgageViewComponent },
+    { path: '**', component: OcPatchRouteComponent },
+];
+
+```
+
+Otherwise, the microfront would not work properly.
