@@ -1,40 +1,110 @@
-Zone - https://github.com/CanopyTax/single-spa-angular/commit/696720f60db5469a2686f0d85200f83c7763f7f9
-
-https://verdaccio.org
+# oc-template-angular
 
 
-WIP oc-template-angular
-=================
+Angular-templates for the [OpenComponents](https://github.com/opentable/oc) template system.
 
-react-templates with typescript support & utilties for the [OpenComponents](https://github.com/opentable/oc) template system
-
-Based on Nick Balestra's work on [oc-template-react](https://github.com/opencomponents/oc-template-react)
-
-***
-
-## Packages included in this repo
-
-| Name | Version |
-|--------|-------|
-| [`oc-template-angular`](/packages/oc-template-angular) | [![npm version](https://badge.fury.io/js/oc-template-angular.svg)](http://badge.fury.io/js/oc-template-angular) |
-| [`oc-template-angular-compiler`](/packages/oc-template-angular-compiler) | [![npm version](https://badge.fury.io/js/oc-template-angular-compiler.svg)](http://badge.fury.io/js/oc-template-angular-compiler) 
+Based on Nick Balestra's work at [oc-template-react] (https://github.com/opencomponents/oc-template-react)
 
 
-## Usage:
+## Packages included in this repository
 
-Initialize a component with the oc-template-react and follow the CLI instructions
+| Name                                                                      | Descripción
+|---                                                                        | ---
+| [`oc-angular`](/packages/oc-template-angular)                             | Components, Modules and Services used by `oc-template-angular-compiler` during the compilation phase of an Angular component.
+| [`oc-angular-component-wrapper`](/packages/oc-angular-component-wrapper)  | In charge of wrapping the Angular compilation.
+| [`oc-template-angular`](/packages/oc-template-angular)                    | Pending
+| [`oc-template-angular-compiler`](/packages/oc-template-angular-compiler)  | Responsible for Compiling the component.
 
-```
-$ oc init <your-component-name> oc-template-angular
-$ cd <your-component-name>
-$ npm install
-```
 
-## Extra info:
-### package.json requirements
-- `template.src` - the react App entry point -  should export a react component as `default`
-- `template.type` -  `oc-template-angular`
-- required in `devDependencies` -  `oc-template-react-compiler`, `react`, `react-dom`, `@types/react`
+## Creation of a Microfront:
+
+The usual way to create a microfront with open components is through the `oc init` command. However, Angular is a bit more complex and the logic executed by this command is not enough. In addition, we thought that it would be better to not use the command and take into account projects based on the Angular CLI, for the following reasons:
+
+- For existing projects, it is easier to add the logic necessary to transform your SPA into a microfront than to start from scratch.
+
+- Most Angular projects are created from the CLI provided by the framework. In other words, Angular-based projects have the file angular.json, a similar folder structure, and are compiled using the NG CLI. Introducing another way to create projects in the Angular ecosystem would not make sense.
+
+  So, if you want to use the angular template you will have to manually execute the following steps:
+
+1. Copy the following JSON snippet:
+
+    ``` json
+      "oc": {
+        "parameters": {
+          "name": {
+            "default": "Joe",
+            "description": "Your name",
+            "example": "Jane Doe",
+            "mandatory": false,
+            "type": "string"
+          },
+          "complex": {
+            "default": "{\"test\":\"works\"}",
+            "description": "complex object example",
+            "example": "{\"test\":\"works\"}",
+            "mandatory": false,
+            "type": "string"
+          }
+        },
+        "files": {
+          "data": "src/app/server.ts",
+          "template": {
+            "src": "template.js",
+            "type": "oc-template-angular"
+          }
+        }
+      }
+    ```
+
+2. Paste it into the `package.json` of your project and then modify the` parameters` property according to your needs. The files property should not be modified.
+
+    ### Note:
+
+     If you have taken a look at the JSON fragment, you will notice that complex data is also of type `string`, this is due to the transformation of said `string` to object within the template. **Important!**: OC does not recommended to request complex objects, always simple data.
+
+3. Install the `oc-template-template-angular-compiler` and `@angular-builders/custom-webpack` dependencies as devDependencies using the following command: `npm i -D oc-template-angular-compiler @angular-builders/custom-webpack@8.4.1`
+
+4. Modify the angular.json file with the following values:
+
+    - **architect/build/builder**: @angular-builders/custom-webpack:browser
+    - **architect/build/options/customWebpackConfig/path**: node_modules/oc-template-angular-compiler/lib/oc-webpack.config.js
+
+5. Download the file [`server.ts`](server.ts) and copy it to the path `src/app`
+
+    ``` typescript
+    import { Context } from 'oc-angular/src/oc-context.interface';
+
+    export function data(context: Context, callback: (error: any, data: any) => void) {
+        const { name, complex } = context.params;
+
+        return callback(null, { name, complex });
+    }
+
+    ```
+
+6. For the OC template to work correctly it is necessary to add the `Router` module even if the SPA does not have routing. This is because microfronts are used by consumers with routes that the microfront is unaware of.
+
+    Said Router should have a content similar to this:
+
+    ``` typescript
+    import { OcPatchRouteComponent } from 'oc-angular';
+
+    const routes: Routes = [
+      { path: '**', component: OcPatchRouteComponent }, // Important
+    ];
+
+    @NgModule({
+      imports: [RouterModule.forRoot(routes)],
+      exports: [RouterModule],
+      providers: [{ provide: APP_BASE_HREF, useValue: '/' }] // Important
+    })
+    ```
+
+7. Finally, make sure you have the polyfill Zone activated, through the `polyfills.ts` file:
+    ``` typescript
+    import 'zone.js/dist/zone';
+    ```
+
 ### conventions
 - `props = server()` - the viewModel generated by the server is automatically passed to the react application as props
 - The oc-client-browser is extended and will now expose all the available react-component at `oc.reactComponents[bundleHash]`

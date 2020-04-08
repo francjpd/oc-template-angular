@@ -5,7 +5,6 @@ Angular-templates para el sistema de templates de [OpenComponents](https://githu
 
 Basado en el trabajo de Nick Balestra en [oc-template-react](https://github.com/opencomponents/oc-template-react)
 
-***
 
 ## Paquetes incluidos en este repositorio
 
@@ -55,7 +54,6 @@ Así que, si quieres utilizar el template de angular tendrás que ejecutar manua
           }
         }
       }
-
     ```
 
 2. Pegalo en el `package.json` de tu proyecto y a continuacion modifica la propiedad `parameters` de acuerdo a tus necesidades. La propiedad files no la debes modificar.
@@ -84,7 +82,7 @@ Así que, si quieres utilizar el template de angular tendrás que ejecutar manua
 
     ```
 
-6. Finalmente, es necesario agregar el módulo `Router` aunque la SPA no tenga enrutamiento. Esto es debido a que los microfronts son usados por los consumidores con rutas que el microfront desconoce.
+6. Para que el template de OC funcione correctamente es necesario agregar el módulo `Router` aunque la SPA no tenga enrutamiento. Esto es debido a que los microfronts son usados por los consumidores con rutas que el microfront desconoce.
 
     Dicho Router deberia tener un contenido similar a este:
 
@@ -92,19 +90,19 @@ Así que, si quieres utilizar el template de angular tendrás que ejecutar manua
     import { OcPatchRouteComponent } from 'oc-angular';
 
     const routes: Routes = [
-      { path: '**', component: OcPatchRouteComponent },
+      { path: '**', component: OcPatchRouteComponent }, // Importante
     ];
 
     @NgModule({
       imports: [RouterModule.forRoot(routes)],
       exports: [RouterModule],
-      providers: [{ provide: APP_BASE_HREF, useValue: '/' }]
+      providers: [{ provide: APP_BASE_HREF, useValue: '/' }] // Importante
     })
     ```
 
-7. Asegurate de tener el polyfill Zone activado mediante el siguiente comando: 
+7.  Finalmente, asegurate de tener el polyfill Zone activado, a través del fichero `polyfills.ts`:
     ``` typescript
-    import 'zone.js/dist/zone';  // Included with Angular CLI.
+    import 'zone.js/dist/zone';
     ```
 
 ### conventions
