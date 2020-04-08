@@ -71,9 +71,7 @@ Así que, si quieres utilizar el template de angular tendrás que ejecutar manua
     - **architect/build/builder**: @angular-builders/custom-webpack:browser
     - **architect/build/options/customWebpackConfig/path**: node_modules/oc-template-angular-compiler/lib/oc-webpack.config.js
 
-5. Agrega el `OcModule` de la dependencia `oc-angular` al módulo raiz.
-
-6. Descarga el fichero [`server.ts`](server.ts) y copialo en la ruta `src/app`
+5. Descarga el fichero [`server.ts`](server.ts) y copialo en la ruta `src/app`
 
     ``` typescript
     import { Context } from 'oc-angular/src/oc-context.interface';
@@ -86,7 +84,7 @@ Así que, si quieres utilizar el template de angular tendrás que ejecutar manua
 
     ```
 
-7. Finalmente, es necesario agregar el módulo `Router` aunque la SPA no tenga enrutamiento. Esto es debido a que los microfronts son usados por los consumidores con rutas que el microfront desconoce.
+6. Finalmente, es necesario agregar el módulo `Router` aunque la SPA no tenga enrutamiento. Esto es debido a que los microfronts son usados por los consumidores con rutas que el microfront desconoce.
 
     Dicho Router deberia tener un contenido similar a este:
 
@@ -104,7 +102,7 @@ Así que, si quieres utilizar el template de angular tendrás que ejecutar manua
     })
     ```
 
-8. Asegurate de tener el polyfill Zone activado mediante el siguiente comando: 
+7. Asegurate de tener el polyfill Zone activado mediante el siguiente comando: 
     ``` typescript
     import 'zone.js/dist/zone';  // Included with Angular CLI.
     ```
