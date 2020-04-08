@@ -1,4 +1,5 @@
 # oc-template-angular
+[Access to the ES version of the Readme](./README-ES.md)
 
 
 Angular-templates for the [OpenComponents](https://github.com/opentable/oc) template system.
@@ -60,7 +61,7 @@ The usual way to create a microfront with open components is through the `oc ini
 
     ### Note:
 
-     If you have taken a look at the JSON fragment, you will notice that complex data is also of type `string`, this is due to the transformation of said `string` to object within the template. **Important!**: OC does not recommended to request complex objects, always simple data.
+     If you have taken a look at the JSON fragment, you will notice that complex data is also of type `string`, this is due to the transformation of said `string` to object within the template. **Important!**: OC does not recommended to request complex objects, always simple data.
 
 3. Install the `oc-template-template-angular-compiler` and `@angular-builders/custom-webpack` dependencies as devDependencies using the following command: `npm i -D oc-template-angular-compiler @angular-builders/custom-webpack@8.4.1`
 

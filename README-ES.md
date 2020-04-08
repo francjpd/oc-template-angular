@@ -8,7 +8,7 @@ Basado en el trabajo de Nick Balestra en [oc-template-react](https://github.com/
 
 ## Paquetes incluidos en este repositorio
 
-| Name                                                                      | Descripción
+| Name                                                                      | Description
 |---                                                                        | ---
 | [`oc-angular`](/packages/oc-template-angular)                             | Componentes, Modulos y Servicios usados por `oc-template-angular-compiler` durante la fase de compilación de un componente Angular.
 | [`oc-angular-component-wrapper`](/packages/oc-angular-component-wrapper)  | Encargado de envolver la compilación de Angular.
