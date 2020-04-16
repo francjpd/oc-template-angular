@@ -13,6 +13,7 @@ const pascalcase = require('pascalcase');
 const viewTemplate = require('./viewTemplate');
 
 const TEMPORAL_FOLDER = '';
+const UTF8 = 'UTF8';
 const angularComponentFilename = 'angular-component.js';
 const callbacks = [];
 let isWatching = false;
@@ -23,18 +24,21 @@ let bundleHash;
  * Retrieve the component & module name from the <path>/src/app folder & returns a new object containing the options plus the root info.
  */
 const optionsWithRootInfo = options => {
-  const appPath = join(options.componentPath, 'src', 'app');
+  const { publishPath, componentPath } = options;
+  const appPath = join(componentPath, 'src', 'app');
 
   const rootFiles = readdirSync(appPath);
   const rootComponentName = rootFiles.find((file) => file.includes('component.ts'));
   const rootModuleName = rootFiles.find((file) => file.match(/^(?=.*?\bmodule\b)((?!routing).)*$/)).split('.ts')[0];
-  const rootComponent = readFileSync(join(appPath, rootComponentName), 'UTF8');
+  const rootComponent = readFileSync(join(appPath, rootComponentName), UTF8);
   const rootComponentSelector = rootComponent.match(/selector: ['"][a-z-0-9]*'/)[0].split("'")[1];
-  
+  const outputTempPath = join(publishPath, TEMPORAL_FOLDER);
+
   return {
     ...options,
     rootModuleName,
-    rootComponentSelector
+    rootComponentSelector,
+    outputTempPath
   }
 }
 
@@ -77,30 +81,40 @@ const findByPrecedenceOrder = (files) => files.find((fileName) => {
 /**
  *  gets the compiled ng app, wraps it so OC can understand the component
  */
-const wrapNgApp = (publishPath, outputTempPath) => {
+const wrapNgApp = ({ publishPath, outputTempPath, componentPath, port }) => {
   const files = readdirSync(join(outputTempPath));
   const mainFile = findByPrecedenceOrder(files);
-  const bundle = readFileSync(join(outputTempPath, mainFile), 'UTF8');
+  const bundle = readFileSync(join(outputTempPath, mainFile), UTF8);
   const bundleHash = hashBuilder.fromString(bundle);
   const wrappedBundle = angularComponentWrapper(bundleHash, bundle);
-  outputFileSync(join(publishPath, angularComponentFilename), wrappedBundle);
-
+  const prefixedBundle = prefixLibraryPathToAsset(componentPath, port, wrappedBundle);
+  outputFileSync(join(publishPath, angularComponentFilename), prefixedBundle);
   return bundleHash;
+}
+
+/**
+ * 
+ */
+const prefixLibraryPathToAsset = (componentPath, port, bundle) => {
+  const libraryPath = isWatching ?
+    JSON.parse(readFileSync(join(componentPath, 'oc.json'), UTF8)).registries[0] :
+    `localhost:${port}`;
+
+  return bundle.replace(/\/assets/g, `${libraryPath}/assets`);
 }
 
 /**
  * Calls the ng CLI to compile the ng app; next, wraps the compiled ng app so OC can understand it; lastly
  * creates a hash so it can be called by the template.js to have a reference of it.
  */
-function compileNg({ publishPath, componentPath }) {
-  const outputTempPath = join
-    (publishPath, TEMPORAL_FOLDER);
+function compileNg(options) {
+  const { componentPath, outputTempPath } = options;
   execSync(`ng build --output-path=${outputTempPath} --main=src/app/oc/main.ts --crossOrigin=none --prod=true --output-hashing none`,
     {
       env: process.env,
       cwd: componentPath
     });
-  return wrapNgApp(publishPath, outputTempPath);
+  return wrapNgApp(options);
 };
 
 
@@ -115,7 +129,7 @@ function watch(options) {
 
   spawnedProcess.stdout.on('data', (data) => {
     if (`${data}`.match(/chunk.*main/)) {
-      bundleHash = wrapNgApp(publishPath, outputTempPath);
+      bundleHash = wrapNgApp(options);
       const callback = callbacks.shift();
       if (callback) {
         callback(null, compileNgWrapper(options, bundleHash));
