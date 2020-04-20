@@ -18,6 +18,7 @@ export const data = (context : Context, callback : (error: any, data?: any) => v
     const props = Object.assign({}, model, {
       _params: model,
       _staticPath: context.staticPath,
+      _assethPath: context.staticPath + 'src/assets/'
       _baseUrl: context.baseUrl,
       _componentName: "${componentName}",
       _componentVersion: "${componentVersion}"

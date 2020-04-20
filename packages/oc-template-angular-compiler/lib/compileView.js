@@ -81,26 +81,15 @@ const findByPrecedenceOrder = (files) => files.find((fileName) => {
 /**
  *  gets the compiled ng app, wraps it so OC can understand the component
  */
-const wrapNgApp = ({ publishPath, outputTempPath, componentPath, port }) => {
+const wrapNgApp = (options) => {
+  const { publishPath, outputTempPath } = options;
   const files = readdirSync(join(outputTempPath));
   const mainFile = findByPrecedenceOrder(files);
   const bundle = readFileSync(join(outputTempPath, mainFile), UTF8);
   const bundleHash = hashBuilder.fromString(bundle);
   const wrappedBundle = angularComponentWrapper(bundleHash, bundle);
-  const prefixedBundle = prefixLibraryPathToAsset(componentPath, port, wrappedBundle);
-  outputFileSync(join(publishPath, angularComponentFilename), prefixedBundle);
+  outputFileSync(join(publishPath, angularComponentFilename), wrappedBundle);
   return bundleHash;
-}
-
-/**
- * 
- */
-const prefixLibraryPathToAsset = (componentPath, port, bundle) => {
-  const libraryPath = isWatching ?
-    JSON.parse(readFileSync(join(componentPath, 'oc.json'), UTF8)).registries[0] :
-    `localhost:${port}`;
-
-  return bundle.replace(/\/assets/g, `${libraryPath}/assets`);
 }
 
 /**
@@ -116,7 +105,6 @@ function compileNg(options) {
     });
   return wrapNgApp(options);
 };
-
 
 /**
  * Calls the ng CLI in watch mode.

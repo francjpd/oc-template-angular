@@ -49,11 +49,14 @@
   },
   "oc": {
     "files": {
-      "data": "src/oc/server.ts",
+      "data": "src/server/server.ts",
       "template": {
         "src": "template.js",
         "type": "oc-template-angular"
-      }
+      },
+      "static":[
+        "src/assets"
+      ]
     },
     "parameters": {
       "name": {

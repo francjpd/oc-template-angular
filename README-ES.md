@@ -47,11 +47,14 @@ Así que, si quieres utilizar el template de angular tendrás que ejecutar manua
           }
         },
         "files": {
-          "data": "src/app/server.ts",
+          "data": "src/server/server.ts",
           "template": {
             "src": "template.js",
             "type": "oc-template-angular"
-          }
+          },
+          "static": [
+            "src/assets"
+          ]
         }
       }
     ```
